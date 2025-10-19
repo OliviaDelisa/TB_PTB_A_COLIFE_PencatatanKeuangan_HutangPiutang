@@ -1,0 +1,19 @@
+package com.example.tugasbesarptb_colife.navigation
+
+import androidx.compose.runtime.Composable
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.tugasbesarptb_colife.pages.LandingPage
+import com.example.tugasbesarptb_colife.pages.Login
+import com.example.tugasbesarptb_colife.pages.Daftar
+
+@Composable
+fun NavGraph() {
+    val navController = rememberNavController()
+    NavHost(navController = navController, startDestination = "landing") {
+        composable("landing") { LandingPage(navController) }
+        composable("login") { Login(navController) }
+        composable("signup") { Daftar(navController) }
+    }
+}
