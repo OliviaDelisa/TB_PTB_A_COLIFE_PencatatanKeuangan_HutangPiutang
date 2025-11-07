@@ -7,6 +7,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.tugasbesarptb_colife.pages.LandingPage
 import com.example.tugasbesarptb_colife.pages.Login
 import com.example.tugasbesarptb_colife.pages.Daftar
+import com.example.tugasbesarptb_colife.pages.pemasukan.DaftarPemasukanScreen
 
 @Composable
 fun NavGraph() {
@@ -15,5 +16,7 @@ fun NavGraph() {
         composable("landing") { LandingPage(navController) }
         composable("login") { Login(navController) }
         composable("signup") { Daftar(navController) }
+        composable("daftarpemasukan") { DaftarPemasukanScreen(navController) }
+
     }
 }
