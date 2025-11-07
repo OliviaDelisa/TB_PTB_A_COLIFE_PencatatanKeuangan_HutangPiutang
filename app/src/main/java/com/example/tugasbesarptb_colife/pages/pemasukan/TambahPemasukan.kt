@@ -56,7 +56,7 @@ fun TambahPemasukanScreen(navController: NavController) {
             )
         },
         bottomBar = {
-            // Kita panggil lagi BottomNavBar yang sudah ada di file DaftarPemasukan.kt
+            // memanggil BottomNavBar yang sudah ada di file DaftarPemasukan.kt
             BottomNavBar(navController = navController)
         },
         containerColor = Color.White
