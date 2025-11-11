@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,7 +24,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.tugasbesarptb_colife.ui.theme.TugasBesarPTB_COLIFETheme
 import com.example.tugasbesarptb_colife.ui.theme.hijau30
-
+import com.example.tugasbesarptb_colife.components.BottomNavBar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TambahPemasukanScreen(navController: NavController) {
@@ -32,6 +33,8 @@ fun TambahPemasukanScreen(navController: NavController) {
     var sumberPemasukan by remember { mutableStateOf("") }
     var tanggalPemasukan by remember { mutableStateOf("") }
     var jumlahPemasukan by remember { mutableStateOf("") }
+
+    val currentRoute = navController.currentBackStackEntry?.destination?.route
 
     Scaffold(
         topBar = {
@@ -56,8 +59,8 @@ fun TambahPemasukanScreen(navController: NavController) {
             )
         },
         bottomBar = {
-            // memanggil BottomNavBar yang sudah ada di file DaftarPemasukan.kt
-            BottomNavBar(navController = navController)
+            BottomNavBar(navController = navController, currentRoute = currentRoute)
+
         },
         containerColor = Color.White
     ) { innerPadding ->
@@ -177,6 +180,7 @@ private fun FormInput(
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             trailingIcon = trailingIcon,
+            textStyle = TextStyle(color = Color.Black, fontSize = 16.sp),
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = hijau30,
                 focusedBorderColor = hijau30,

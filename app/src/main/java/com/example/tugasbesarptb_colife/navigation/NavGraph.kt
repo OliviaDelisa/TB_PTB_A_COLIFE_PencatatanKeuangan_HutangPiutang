@@ -8,6 +8,8 @@ import com.example.tugasbesarptb_colife.pages.LandingPage
 import com.example.tugasbesarptb_colife.pages.Login
 import com.example.tugasbesarptb_colife.pages.Daftar
 import com.example.tugasbesarptb_colife.pages.pemasukan.DaftarPemasukanScreen
+import com.example.tugasbesarptb_colife.pages.pemasukan.TambahPemasukanScreen
+
 
 @Composable
 fun NavGraph() {
@@ -17,6 +19,7 @@ fun NavGraph() {
         composable("login") { Login(navController) }
         composable("signup") { Daftar(navController) }
         composable("daftarpemasukan") { DaftarPemasukanScreen(navController) }
+        composable("tambahpemasukan") { TambahPemasukanScreen(navController) }
 
     }
 }
