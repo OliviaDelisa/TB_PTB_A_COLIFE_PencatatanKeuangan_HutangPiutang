@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.navigation.compose.rememberNavController
 import com.example.tugasbesarptb_colife.navigation.NavGraph
 import com.example.tugasbesarptb_colife.ui.theme.TugasBesarPTB_COLIFETheme
 
@@ -13,7 +14,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TugasBesarPTB_COLIFETheme {
-                NavGraph()
+                val navController = rememberNavController()
+                NavGraph(navController = navController)
             }
         }
     }
