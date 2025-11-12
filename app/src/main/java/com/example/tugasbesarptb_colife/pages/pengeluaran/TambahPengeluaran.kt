@@ -40,7 +40,7 @@ import com.example.tugasbesarptb_colife.components.BottomNavBar
 
 
 @Composable
-fun TambahPengeluaranScreen(navController: NavController) {
+fun TambahPengeluaranScreen(navController: NavController, onAddPengeluaran: (Pengeluaran) -> Unit) {
     var namaPengeluaran by remember { mutableStateOf("") }
     var tanggalPengeluaran by remember { mutableStateOf("") }
     var jumlahPengeluaran by remember { mutableStateOf("") }
@@ -133,7 +133,11 @@ fun TambahPengeluaranScreen(navController: NavController) {
                 }
 
                 Button(
-                    onClick = { /* Handle Save */ },
+                    onClick = { 
+                        val newPengeluaran = Pengeluaran(namaPengeluaran, tanggalPengeluaran, jumlahPengeluaran)
+                        onAddPengeluaran(newPengeluaran)
+                        navController.popBackStack()
+                    },
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4DB6AC)),
                     modifier = Modifier.weight(1f)
@@ -149,6 +153,6 @@ fun TambahPengeluaranScreen(navController: NavController) {
 @Composable
 fun TambahPengeluaranScreenPreview() {
     TugasBesarPTB_COLIFETheme {
-        TambahPengeluaranScreen(rememberNavController())
+        TambahPengeluaranScreen(rememberNavController(), onAddPengeluaran = {})
     }
 }
