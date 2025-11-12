@@ -11,9 +11,15 @@ import com.example.tugasbesarptb_colife.pages.LandingPage
 import com.example.tugasbesarptb_colife.pages.Login
 import com.example.tugasbesarptb_colife.pages.Daftar
 import com.example.tugasbesarptb_colife.pages.DaftarPiutang
+import com.example.tugasbesarptb_colife.pages.EditHutangScreen
 import com.example.tugasbesarptb_colife.pages.EditPiutangScreen
+import com.example.tugasbesarptb_colife.pages.HistoryHutangScreen
 import com.example.tugasbesarptb_colife.pages.Home
+import com.example.tugasbesarptb_colife.pages.HutangScreen
 import com.example.tugasbesarptb_colife.pages.HutangUtama
+import com.example.tugasbesarptb_colife.pages.ProfilScreen
+import com.example.tugasbesarptb_colife.pages.StrukHutangScreen
+import com.example.tugasbesarptb_colife.pages.TambahHutangScreen
 import com.example.tugasbesarptb_colife.pages.TambahPiutang
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -29,7 +35,12 @@ fun NavGraph(navController: NavHostController) {
         composable("tambahPiutang") {TambahPiutang(navController) }
         composable("uploadBuktiPembayaran") {BuktiPembayaranScreen(navController) }
         composable("editPiutang") { EditPiutangScreen(navController) }
-
+        composable("listhutang") { HutangScreen(navController) }
+        composable("historyhutang") { HistoryHutangScreen(navController) }
+        composable("strukhutang") { StrukHutangScreen(navController) }
+        composable("tambahhutang") { TambahHutangScreen(navController) }
+        composable("edithutang") { EditHutangScreen(navController) }
+        composable("profilscreen") { ProfilScreen(navController) }
     }
 }
 

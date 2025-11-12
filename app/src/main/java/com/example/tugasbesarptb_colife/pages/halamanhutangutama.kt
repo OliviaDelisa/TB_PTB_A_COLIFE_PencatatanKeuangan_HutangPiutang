@@ -43,7 +43,7 @@ fun HutangUtama(navController: NavController) {
                 icon = Icons.Default.Description,
                 title = "Hutang",
                 onClick = {
-                    navController.navigate("detailHutang")
+                    navController.navigate("listhutang")
                 }
             )
 
