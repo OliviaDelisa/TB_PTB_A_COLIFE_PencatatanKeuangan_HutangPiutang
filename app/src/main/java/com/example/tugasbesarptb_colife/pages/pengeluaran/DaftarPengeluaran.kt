@@ -30,7 +30,11 @@ data class Pengeluaran(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DaftarPengeluaranScreen(navController: NavController, pengeluaranList: List<Pengeluaran>) {
+fun DaftarPengeluaranScreen(
+    navController: NavController, 
+    pengeluaranList: List<Pengeluaran>,
+    onDeletePengeluaran: (Pengeluaran) -> Unit
+) {
     val currentRoute = navController.currentBackStackEntry?.destination?.route
 
     Scaffold(
@@ -101,7 +105,7 @@ fun DaftarPengeluaranScreen(navController: NavController, pengeluaranList: List<
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(pengeluaranList) { pengeluaran ->
-                    PengeluaranCard(pengeluaran)
+                    PengeluaranCard(pengeluaran, onDelete = { onDeletePengeluaran(pengeluaran) })
                 }
             }
         }
@@ -109,7 +113,7 @@ fun DaftarPengeluaranScreen(navController: NavController, pengeluaranList: List<
 }
 
 @Composable
-fun PengeluaranCard(pengeluaran: Pengeluaran) {
+fun PengeluaranCard(pengeluaran: Pengeluaran, onDelete: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth(),
@@ -133,7 +137,7 @@ fun PengeluaranCard(pengeluaran: Pengeluaran) {
                     IconButton(onClick = { /*TODO*/ }) {
                         Icon(Icons.Default.Edit, contentDescription = "Edit")
                     }
-                    IconButton(onClick = { /*TODO*/ }) {
+                    IconButton(onClick = onDelete) {
                         Icon(Icons.Default.Delete, contentDescription = "Delete")
                     }
                 }
@@ -147,9 +151,13 @@ fun PengeluaranCard(pengeluaran: Pengeluaran) {
 @Composable
 fun PengeluaranScreenPreview() {
     TugasBesarPTB_COLIFETheme {
-        DaftarPengeluaranScreen(navController = rememberNavController(), pengeluaranList = listOf(
-            Pengeluaran("Makanan", "19/10/25", "Rp30.000.000"),
-            Pengeluaran("Minuman", "30/10/25", "Rp3.300.000"),
-        ))
+        DaftarPengeluaranScreen(
+            navController = rememberNavController(), 
+            pengeluaranList = listOf(
+                Pengeluaran("Makanan", "19/10/25", "Rp30.000.000"),
+                Pengeluaran("Minuman", "30/10/25", "Rp3.300.000"),
+            ),
+            onDeletePengeluaran = {}
+        )
     }
 }

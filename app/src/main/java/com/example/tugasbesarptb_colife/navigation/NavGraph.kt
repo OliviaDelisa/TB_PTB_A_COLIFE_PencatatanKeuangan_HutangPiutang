@@ -23,7 +23,13 @@ fun NavGraph() {
         composable("login") { Login(navController) }
         composable("signup") { Daftar(navController) }
         composable("daftarpengeluaran") { 
-            DaftarPengeluaranScreen(navController, pengeluaranList) 
+            DaftarPengeluaranScreen(
+                navController = navController, 
+                pengeluaranList = pengeluaranList,
+                onDeletePengeluaran = { pengeluaran ->
+                    pengeluaranList.remove(pengeluaran)
+                }
+            ) 
         }
         composable("tambahpengeluaran") { 
             TambahPengeluaranScreen(navController) { pengeluaran ->
