@@ -32,11 +32,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.tugasbesarptb_colife.model.Pengeluaran
+import com.example.tugasbesarptb_colife.ui.theme.TugasBesarPTB_COLIFETheme
+import com.example.tugasbesarptb_colife.ui.viewmodel.PengeluaranViewModel
 
 @Composable
-fun TambahPengeluaranScreen(navController: NavController) {
+fun TambahPengeluaranScreen(navController: NavController, pengeluaranViewModel: PengeluaranViewModel) {
     var namaPengeluaran by remember { mutableStateOf("") }
     var tanggalPengeluaran by remember { mutableStateOf("") }
     var jumlahPengeluaran by remember { mutableStateOf("") }
@@ -127,7 +131,15 @@ fun TambahPengeluaranScreen(navController: NavController) {
                 }
 
                 Button(
-                    onClick = { /* Handle Save */ },
+                    onClick = {
+                        val pengeluaran = Pengeluaran(namaPengeluaran, tanggalPengeluaran, jumlahPengeluaran)
+                        pengeluaranViewModel.tambahPengeluaran(pengeluaran)
+                        navController.navigate("daftarpengeluaran") {
+                            popUpTo("daftarpengeluaran") {
+                                inclusive = true
+                            }
+                        }
+                    },
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4DB6AC)),
                     modifier = Modifier.weight(1f)
@@ -142,7 +154,7 @@ fun TambahPengeluaranScreen(navController: NavController) {
 @Preview(showBackground = true)
 @Composable
 fun TambahPengeluaranScreenPreview() {
-    TugasBesarPTBCOLIFETheme {
-        TambahPengeluaranScreen(rememberNavController())
+    TugasBesarPTB_COLIFETheme {
+        TambahPengeluaranScreen(rememberNavController(), viewModel())
     }
 }
