@@ -32,20 +32,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.tugasbesarptb_colife.model.Pengeluaran
 import com.example.tugasbesarptb_colife.ui.theme.TugasBesarPTB_COLIFETheme
-import com.example.tugasbesarptb_colife.ui.viewmodel.PengeluaranViewModel
+import androidx.navigation.compose.rememberNavController
+import com.example.tugasbesarptb_colife.components.BottomNavBar
+
+
 
 @Composable
-fun TambahPengeluaranScreen(navController: NavController, pengeluaranViewModel: PengeluaranViewModel) {
+fun TambahPengeluaranScreen(navController: NavController) {
     var namaPengeluaran by remember { mutableStateOf("") }
     var tanggalPengeluaran by remember { mutableStateOf("") }
     var jumlahPengeluaran by remember { mutableStateOf("") }
 
-    Scaffold { paddingValues ->
+    val currentRoute = navController.currentBackStackEntry?.destination?.route
+
+    Scaffold (bottomBar = {BottomNavBar(navController = navController, currentRoute = currentRoute)}) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -96,7 +98,7 @@ fun TambahPengeluaranScreen(navController: NavController, pengeluaranViewModel: 
             OutlinedTextField(
                 value = jumlahPengeluaran,
                 onValueChange = { jumlahPengeluaran = it },
-                placeholder = { Text("Masukkan nominal yang pengeluaran") },
+                placeholder = { Text("Masukkan nominal pengeluaran") },
                 trailingIcon = { Text("Rp", color = Color.Gray) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -131,15 +133,7 @@ fun TambahPengeluaranScreen(navController: NavController, pengeluaranViewModel: 
                 }
 
                 Button(
-                    onClick = {
-                        val pengeluaran = Pengeluaran(namaPengeluaran, tanggalPengeluaran, jumlahPengeluaran)
-                        pengeluaranViewModel.tambahPengeluaran(pengeluaran)
-                        navController.navigate("daftarpengeluaran") {
-                            popUpTo("daftarpengeluaran") {
-                                inclusive = true
-                            }
-                        }
-                    },
+                    onClick = { /* Handle Save */ },
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4DB6AC)),
                     modifier = Modifier.weight(1f)
@@ -155,6 +149,6 @@ fun TambahPengeluaranScreen(navController: NavController, pengeluaranViewModel: 
 @Composable
 fun TambahPengeluaranScreenPreview() {
     TugasBesarPTB_COLIFETheme {
-        TambahPengeluaranScreen(rememberNavController(), viewModel())
+        TambahPengeluaranScreen(rememberNavController())
     }
 }
