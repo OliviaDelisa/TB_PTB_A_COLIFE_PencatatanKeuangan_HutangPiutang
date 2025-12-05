@@ -27,9 +27,7 @@ import com.example.tugasbesarptb_colife.components.BottomNavBar
 import com.example.tugasbesarptb_colife.ui.theme.TugasBesarPTB_COLIFETheme
 import com.example.tugasbesarptb_colife.ui.theme.hijau30
 
-// Asumsi Anda punya file NavRoutes.kt untuk rute yang aman
 object NavRoutes {
-    const val DAFTAR_PEMASUKAN = "daftarpemasukan"
     const val TAMBAH_PEMASUKAN = "tambahpemasukan"
     const val TAMBAH_KATEGORI = "tambahkategori" // Rute baru untuk kategori
 }
@@ -150,7 +148,6 @@ fun DaftarPemasukanScreen(navController: NavController) {
     }
 }
 
-// Composable baru untuk tombol pilihan ("Kategori" & "Pemasukan")
 @Composable
 private fun OptionButton(text: String, onClick: () -> Unit) {
     Button(
