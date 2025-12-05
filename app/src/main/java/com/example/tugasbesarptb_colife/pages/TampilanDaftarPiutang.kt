@@ -8,55 +8,44 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.tugasbesarptb_colife.components.BottomNavBar
 import com.example.tugasbesarptb_colife.components.TopBar
-import java.text.SimpleDateFormat
-import java.util.*
-
-data class Piutang(
-    val nama: String,
-    val tanggalTenggat: String,
-    val jumlah: String,
-    val tanggalDibuat: String = getCurrentDate(),
-    var tanggalSelesai: String? = null,
-    var selesai: Boolean = false
-)
-
-fun getCurrentDate(): String {
-    val format = SimpleDateFormat("dd MMM yyyy", Locale("id", "ID"))
-    return format.format(Date())
-}
+import com.example.tugasbesarptb_colife.data.local.entity.Piutang
+import com.example.tugasbesarptb_colife.data.repository.PiutangRepository
+import com.example.tugasbesarptb_colife.viewmodel.PiutangViewModel
+import com.example.tugasbesarptb_colife.getCurrentDate
+import com.example.tugasbesarptb_colife.viewmodel.PiutangViewModelFactory
+import com.example.tugasbesarptb_colife.data.local.AppDatabase
 
 @Composable
 fun DaftarPiutang(navController: NavController) {
-    var daftarPiutang by remember {
-        mutableStateOf(listOf(Piutang("Olivia Delisa", "20/10/25", "Rp40.000")))
-    }
+    val context = LocalContext.current
+    val dao = AppDatabase.getInstance(context).piutangDao()
+    val repository = PiutangRepository(dao)
+    val viewModel: PiutangViewModel = viewModel(
+        factory = PiutangViewModelFactory(repository)
+    )
 
-    val piutangBaru =
-        navController.currentBackStackEntry?.savedStateHandle
-            ?.getStateFlow<Triple<String, String, String>?>("piutangBaru", null)
-            ?.collectAsState()
-
-    LaunchedEffect(piutangBaru?.value) {
-        piutangBaru?.value?.let { (nama, tanggal, jumlah) ->
-            daftarPiutang = daftarPiutang + Piutang(nama, tanggal, "Rp$jumlah")
-            navController.currentBackStackEntry?.savedStateHandle?.set("piutangBaru", null)
-        }
-    }
-
+    val daftarPiutang by viewModel.allPiutang.observeAsState(emptyList())
     var fabExpanded by remember { mutableStateOf(false) }
+
+    val aktif = daftarPiutang.filter { !it.selesai }
+    val selesai = daftarPiutang.filter { it.selesai }
 
     Scaffold(
         topBar = { TopBar() },
@@ -88,7 +77,11 @@ fun DaftarPiutang(navController: NavController) {
                                 .padding(horizontal = 10.dp, vertical = 8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(Icons.Default.List, contentDescription = null, tint = Color.Black)
+                            Icon(
+                                Icons.AutoMirrored.Filled.List,
+                                contentDescription = "Daftar",
+                                tint = Color.Black
+                            )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("Tambahkan Daftar Piutang", fontSize = 14.sp)
                         }
@@ -126,81 +119,86 @@ fun DaftarPiutang(navController: NavController) {
         },
         floatingActionButtonPosition = FabPosition.End
     ) { padding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 16.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            val aktif = daftarPiutang.filter { !it.selesai }
-            val selesai = daftarPiutang.filter { it.selesai }
-
+            // DAFTAR PIUTANG AKTIF
             if (aktif.isNotEmpty()) {
-                Text(
-                    "Dibuat pada ${aktif.firstOrNull()?.tanggalDibuat ?: getCurrentDate()}",
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                LazyColumn {
-                    items(aktif) { item ->
+                item {
+                    Text(
+                        "Dibuat pada ${aktif.firstOrNull()?.tanggalDibuat ?: getCurrentDate()}",
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                items(aktif) { item ->
+                    PiutangCard(
+                        piutang = item,
+                        onMarkDone = {
+                            viewModel.updatePiutang(
+                                item.copy(selesai = true, tanggalSelesai = getCurrentDate())
+                            )
+                        },
+                        onEdit = {
+                            navController.currentBackStackEntry?.savedStateHandle?.set("piutangToEdit", item)
+                            navController.navigate("editPiutang")
+                        },
+                        onDelete = { viewModel.deletePiutang(item) },
+                        isDone = false
+                    )
+                }
+            } else {
+                item {
+                    Text(
+                        "Belum ada daftar piutang",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        color = Color.Gray
+                    )
+                }
+            }
+
+            item { Spacer(modifier = Modifier.height(24.dp)) }
+            item { Text("Ditandai Selesai", fontWeight = FontWeight.Bold) }
+            item { Spacer(modifier = Modifier.height(8.dp)) }
+
+            // DAFTAR PIUTANG SELESAI
+            if (selesai.isEmpty()) {
+                item {
+                    Text(
+                        "Belum ada hutang yang ditandai",
+                        modifier = Modifier.fillMaxWidth(),
+                        color = Color.Gray
+                    )
+                }
+            } else {
+                items(selesai) { item ->
+                    Column {
+                        Text(
+                            "Selesai pada ${item.tanggalSelesai ?: getCurrentDate()}",
+                            fontSize = 12.sp,
+                            color = Color.Gray
+                        )
                         PiutangCard(
                             piutang = item,
-                            onMarkDone = {
-                                val tanggalSelesai = getCurrentDate()
-                                daftarPiutang = daftarPiutang.map {
-                                    if (it == item) it.copy(selesai = true, tanggalSelesai = tanggalSelesai)
-                                    else it
-                                }
-                            },
-                            onEdit = { navController.navigate("editPiutang") },
-                            onDelete = { daftarPiutang = daftarPiutang - item },
-                            isDone = false
+                            onMarkDone = {},
+                            onEdit = {},
+                            onDelete = {},
+                            isDone = true
                         )
                     }
                 }
-            } else {
-                Text(
-                    "Belum ada daftar piutang",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    color = Color.Gray
-                )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-            Text("Ditandai Selesai", fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(8.dp))
-
-            if (selesai.isEmpty()) {
-                Text(
-                    "Belum ada hutang yang ditandai",
-                    modifier = Modifier.fillMaxWidth(),
-                    color = Color.Gray
-                )
-            } else {
-                LazyColumn {
-                    items(selesai) { item ->
-                        Column {
-                            Text(
-                                "Selesai pada ${item.tanggalSelesai ?: getCurrentDate()}",
-                                fontSize = 12.sp,
-                                color = Color.Gray
-                            )
-                            PiutangCard(
-                                piutang = item,
-                                onMarkDone = {},
-                                onEdit = {},
-                                onDelete = {},
-                                isDone = true
-                            )
-                        }
-                    }
-                }
-            }
+            item { Spacer(modifier = Modifier.height(16.dp)) }
         }
     }
 }
@@ -232,7 +230,7 @@ fun PiutangCard(
                 Text(piutang.tanggalTenggat, color = Color.Black, fontSize = 13.sp)
             }
 
-            Text(piutang.jumlah, fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 8.dp))
+            Text(piutang.jumlah.toString(), fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 8.dp))
 
             if (!isDone) {
                 IconButton(
