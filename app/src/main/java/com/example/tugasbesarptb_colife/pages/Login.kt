@@ -17,7 +17,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lint.kotlin.metadata.Visibility
 import androidx.navigation.NavController
 import com.example.tugasbesarptb_colife.ui.theme.hijau30
 
@@ -87,20 +86,13 @@ fun Login(navController: NavController) {
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
 
-        TextButton(onClick = { /* TODO: Forgot password navigation */ }) {
-            Text(
-                text = "Forgot Password?",
-                color = Color.Black.copy(alpha = 0.7f),
-                fontSize = 13.sp
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { /* TODO: Login logic */ },
+            onClick = { navController.navigate("home") {
+                popUpTo("login") { inclusive = true }
+            } },
             colors = ButtonDefaults.buttonColors(containerColor = hijau30),
             shape = MaterialTheme.shapes.extraLarge,
             modifier = Modifier
