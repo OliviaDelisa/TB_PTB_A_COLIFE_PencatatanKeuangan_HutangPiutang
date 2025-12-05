@@ -10,22 +10,44 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.tugasbesarptb_colife.components.BottomNavBar
 import com.example.tugasbesarptb_colife.components.TopBar
 import com.example.tugasbesarptb_colife.components.TanggalPicker
-
+import com.example.tugasbesarptb_colife.data.local.AppDatabase
+import com.example.tugasbesarptb_colife.data.local.entity.Piutang
+import com.example.tugasbesarptb_colife.data.repository.PiutangRepository
+import com.example.tugasbesarptb_colife.viewmodel.PiutangViewModel
+import com.example.tugasbesarptb_colife.viewmodel.PiutangViewModelFactory
+import kotlinx.coroutines.launch
+import com.example.tugasbesarptb_colife.getCurrentDate
 
 @Composable
 fun TambahPiutang(navController: NavController) {
+    // 1️⃣ Ambil context untuk Room
+    val context = LocalContext.current
+    val database = AppDatabase.getInstance(context)
+    val repository = PiutangRepository(database.piutangDao())
+
+    // 2️⃣ Buat ViewModel pakai Factory
+    val viewModel: PiutangViewModel = viewModel(
+        factory = PiutangViewModelFactory(repository)
+    )
+
+    // 3️⃣ State Compose
     var nama by remember { mutableStateOf("") }
     var tanggalTagihan by remember { mutableStateOf("") }
     var jumlah by remember { mutableStateOf("") }
     var showDatePicker by remember { mutableStateOf(false) }
+
+    // Coroutine scope untuk insert
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = { TopBar() },
@@ -89,9 +111,17 @@ fun TambahPiutang(navController: NavController) {
             Button(
                 onClick = {
                     if (nama.isNotBlank() && tanggalTagihan.isNotBlank() && jumlah.isNotBlank()) {
-                        navController.previousBackStackEntry
-                            ?.savedStateHandle
-                            ?.set("piutangBaru", Triple(nama, tanggalTagihan, jumlah))
+                        val piutang = Piutang(
+                            nama = nama,
+                            tanggalTenggat = tanggalTagihan,
+                            jumlah = jumlah.toInt(),
+                            tanggalDibuat = getCurrentDate(),
+                            tanggalSelesai = null,
+                            selesai = false
+                        )
+                        scope.launch {
+                            viewModel.insertPiutangObject(piutang)
+                        }
                         navController.popBackStack()
                     }
                 },
@@ -113,3 +143,6 @@ fun TambahPiutang(navController: NavController) {
         )
     }
 }
+
+
+
