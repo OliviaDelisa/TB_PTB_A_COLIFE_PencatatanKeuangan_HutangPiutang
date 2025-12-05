@@ -1,5 +1,6 @@
 package com.example.tugasbesarptb_colife.pages
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -10,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -18,14 +20,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.tugasbesarptb_colife.model.UserLoginRequest
+import com.example.tugasbesarptb_colife.network.ApiClient
 import com.example.tugasbesarptb_colife.ui.theme.hijau30
-
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun Login(navController: NavController) {
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+
+    var isLoading by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -40,7 +51,6 @@ fun Login(navController: NavController) {
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
-
             ),
             modifier = Modifier.fillMaxWidth()
         )
@@ -86,31 +96,71 @@ fun Login(navController: NavController) {
             modifier = Modifier.fillMaxWidth()
         )
 
-
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { navController.navigate("home") {
-                popUpTo("login") { inclusive = true }
-            } },
+            onClick = {
+
+                if (email.isBlank() || password.isBlank()) {
+                    Toast.makeText(context, "Isi semua field!", Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+
+                isLoading = true
+
+                // CALL BACKEND
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        val request = UserLoginRequest(email, password)
+                        val response = ApiClient.instance.loginUser(request)
+
+                        withContext(Dispatchers.Main) {
+                            isLoading = false
+                            if (response.isSuccessful && response.body()?.success == true) {
+                                Toast.makeText(context, "Login berhasil!", Toast.LENGTH_SHORT).show()
+                                navController.navigate("home") {
+                                    popUpTo("login") { inclusive = true }
+                                }
+                            } else {
+                                Toast.makeText(context, response.body()?.message ?: "Login gagal", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            isLoading = false
+                            Toast.makeText(context, "Kesalahan jaringan", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+
+            },
+            enabled = !isLoading,
             colors = ButtonDefaults.buttonColors(containerColor = hijau30),
             shape = MaterialTheme.shapes.extraLarge,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
         ) {
-            Text(text = "Login", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+            if (isLoading) {
+                CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
+            } else {
+                Text(text = "Login", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Tidak memiliki akun? ", fontSize = 14.sp)
-            TextButton(onClick = { navController.navigate("signup") },
-                contentPadding = PaddingValues(0.dp) ) {
+            TextButton(
+                onClick = { navController.navigate("signup") },
+                contentPadding = PaddingValues(0.dp)
+            ) {
                 Text("Sign up", color = hijau30, fontWeight = FontWeight.SemiBold)
             }
         }

@@ -21,6 +21,8 @@ import com.example.tugasbesarptb_colife.pages.ProfilScreen
 import com.example.tugasbesarptb_colife.pages.StrukHutangScreen
 import com.example.tugasbesarptb_colife.pages.TambahHutangScreen
 import com.example.tugasbesarptb_colife.pages.TambahPiutang
+import com.example.tugasbesarptb_colife.pages.pemasukan.DaftarPemasukanScreen
+import com.example.tugasbesarptb_colife.pages.pemasukan.TambahPemasukanScreen
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -41,6 +43,8 @@ fun NavGraph(navController: NavHostController) {
         composable("tambahhutang") { TambahHutangScreen(navController) }
         composable("edithutang") { EditHutangScreen(navController) }
         composable("profilscreen") { ProfilScreen(navController) }
+        composable("daftarpemasukan") { DaftarPemasukanScreen(navController) }
+        composable("tambahpemasukan") { TambahPemasukanScreen(navController) }
     }
 }
 

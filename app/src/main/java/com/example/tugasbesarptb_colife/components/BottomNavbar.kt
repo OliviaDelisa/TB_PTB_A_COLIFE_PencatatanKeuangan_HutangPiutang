@@ -46,7 +46,7 @@ fun BottomNavBar(navController: NavController, currentRoute: String?) {
             icon = { Icon(Icons.Default.AccountBalanceWallet, contentDescription = "Pemasukan") },
             label = { NavLabel("Pemasukan") },
             selected = currentRoute == "pemasukan",
-            onClick = { navController.navigate("pemasukan") },
+            onClick = { navController.navigate("daftarpemasukan") },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = hijau30,
                 selectedTextColor = hijau30,
