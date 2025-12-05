@@ -25,6 +25,7 @@ import com.example.tugasbesarptb_colife.pages.pemasukan.DaftarPemasukanScreen
 import com.example.tugasbesarptb_colife.pages.pemasukan.TambahPemasukanScreen
 
 @RequiresApi(Build.VERSION_CODES.O)
+
 @Composable
 fun NavGraph(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "landing") {
@@ -45,6 +46,8 @@ fun NavGraph(navController: NavHostController) {
         composable("profilscreen") { ProfilScreen(navController) }
         composable("daftarpemasukan") { DaftarPemasukanScreen(navController) }
         composable("tambahpemasukan") { TambahPemasukanScreen(navController) }
+
+
     }
 }
 

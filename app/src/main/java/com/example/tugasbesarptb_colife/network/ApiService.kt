@@ -7,6 +7,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
 
+
 interface ApiService {
 
     @POST("api/user/register")
@@ -18,6 +19,7 @@ interface ApiService {
     suspend fun loginUser(
         @Body request: UserLoginRequest
     ): Response<ServerResponse>
+
 }
 
 
