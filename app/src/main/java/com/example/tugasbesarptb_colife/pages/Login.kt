@@ -17,13 +17,12 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lint.kotlin.metadata.Visibility
 import androidx.navigation.NavController
 import com.example.tugasbesarptb_colife.ui.theme.hijau30
 
 
 @Composable
-fun Login(navController: NavController) {
+fun Login(navController: NavController, onLoginSuccess: () -> Unit) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }

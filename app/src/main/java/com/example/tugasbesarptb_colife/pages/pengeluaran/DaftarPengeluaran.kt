@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,9 +32,10 @@ data class Pengeluaran(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DaftarPengeluaranScreen(
-    navController: NavController, 
+    navController: NavController,
     pengeluaranList: List<Pengeluaran>,
-    onDeletePengeluaran: (Pengeluaran) -> Unit
+    onDeletePengeluaran: (Pengeluaran) -> Unit,
+    onEditPengeluaran: (Pengeluaran) -> Unit
 ) {
     val currentRoute = navController.currentBackStackEntry?.destination?.route
 
@@ -56,7 +58,7 @@ fun DaftarPengeluaranScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White, // Latar belakang TopAppBar
+                    containerColor = Color.White,
                     titleContentColor = Color.Black,
                     actionIconContentColor = Color.Black
                 )
@@ -83,29 +85,57 @@ fun DaftarPengeluaranScreen(
         floatingActionButtonPosition = FabPosition.End,
         containerColor = Color.White
     ) { innerPadding ->
-        if (pengeluaranList.isEmpty()) {
-            Box(
+        // Gunakan Column untuk menampung Tombol Summary dan konten utama
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp)
+        ) {
+            // --- TOMBOL SUMMARY DITAMBAHKAN DI SINI ---
+            Button(
+                onClick = { /* TODO: Navigasi atau aksi untuk Summary */ },
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = hijau30)
             ) {
                 Text(
-                    text = "Belum ada Pengeluaran",
-                    color = hijau30,
-                    fontSize = 18.sp
+                    text = "Summary",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(pengeluaranList) { pengeluaran ->
-                    PengeluaranCard(pengeluaran, onDelete = { onDeletePengeluaran(pengeluaran) })
+            // --- Akhir dari Tombol Summary ---
+
+            if (pengeluaranList.isEmpty()) {
+                Box(
+                    // Gunakan weight agar Box mengisi sisa ruang yang tersedia
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Belum ada Pengeluaran",
+                        color = hijau30,
+                        fontSize = 18.sp
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 8.dp), // Beri sedikit jarak dari tombol summary
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(pengeluaranList) { pengeluaran ->
+                        PengeluaranCard(
+                            pengeluaran = pengeluaran,
+                            onDelete = { onDeletePengeluaran(pengeluaran) },
+                            onEdit = { onEditPengeluaran(pengeluaran) }
+                        )
+                    }
                 }
             }
         }
@@ -113,7 +143,11 @@ fun DaftarPengeluaranScreen(
 }
 
 @Composable
-fun PengeluaranCard(pengeluaran: Pengeluaran, onDelete: () -> Unit) {
+fun PengeluaranCard(
+    pengeluaran: Pengeluaran,
+    onDelete: () -> Unit,
+    onEdit: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth(),
@@ -134,7 +168,7 @@ fun PengeluaranCard(pengeluaran: Pengeluaran, onDelete: () -> Unit) {
             Column(horizontalAlignment = Alignment.End) {
                 Text(text = pengeluaran.tanggal, fontSize = 12.sp)
                 Row {
-                    IconButton(onClick = { /*TODO*/ }) {
+                    IconButton(onClick = onEdit) {
                         Icon(Icons.Default.Edit, contentDescription = "Edit")
                     }
                     IconButton(onClick = onDelete) {
@@ -152,12 +186,13 @@ fun PengeluaranCard(pengeluaran: Pengeluaran, onDelete: () -> Unit) {
 fun PengeluaranScreenPreview() {
     TugasBesarPTB_COLIFETheme {
         DaftarPengeluaranScreen(
-            navController = rememberNavController(), 
+            navController = rememberNavController(),
             pengeluaranList = listOf(
-                Pengeluaran("Makanan", "19/10/25", "Rp30.000.000"),
-                Pengeluaran("Minuman", "30/10/25", "Rp3.300.000"),
+                Pengeluaran("Makanan", "19/10/25", "Rp30.000"),
+                Pengeluaran("Minuman", "30/10/25", "Rp3.300"),
             ),
-            onDeletePengeluaran = {}
+            onDeletePengeluaran = {},
+            onEditPengeluaran = {}
         )
     }
 }

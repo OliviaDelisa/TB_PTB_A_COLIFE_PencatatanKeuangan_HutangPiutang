@@ -133,7 +133,7 @@ fun TambahPengeluaranScreen(navController: NavController, onAddPengeluaran: (Pen
                 }
 
                 Button(
-                    onClick = { 
+                    onClick = {
                         val newPengeluaran = Pengeluaran(namaPengeluaran, tanggalPengeluaran, jumlahPengeluaran)
                         onAddPengeluaran(newPengeluaran)
                         navController.popBackStack()
