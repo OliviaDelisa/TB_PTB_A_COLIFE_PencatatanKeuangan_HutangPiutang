@@ -1,5 +1,6 @@
 package com.example.tugasbesarptb_colife.pages
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -20,13 +21,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.tugasbesarptb_colife.SessionManager
 import com.example.tugasbesarptb_colife.model.UserLoginRequest
 import com.example.tugasbesarptb_colife.network.ApiClient
 import com.example.tugasbesarptb_colife.ui.theme.hijau30
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @Composable
 fun Login(navController: NavController) {
@@ -34,9 +33,11 @@ fun Login(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-
     var isLoading by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -50,7 +51,7 @@ fun Login(navController: NavController) {
             text = "Selamat Datang",
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
+                textAlign = TextAlign.Center
             ),
             modifier = Modifier.fillMaxWidth()
         )
@@ -82,14 +83,17 @@ fun Login(navController: NavController) {
             onValueChange = { password = it },
             label = { Text("Masukkan Password") },
             singleLine = true,
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation = if (passwordVisible)
+                VisualTransformation.None
+            else
+                PasswordVisualTransformation(),
             trailingIcon = {
-                val image = if (passwordVisible)
-                    Icons.Filled.VisibilityOff
-                else Icons.Filled.Visibility
+                val image =
+                    if (passwordVisible) Icons.Filled.VisibilityOff
+                    else Icons.Filled.Visibility
 
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Icon(imageVector = image, contentDescription = "Toggle password visibility")
+                    Icon(imageVector = image, contentDescription = null)
                 }
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -100,7 +104,6 @@ fun Login(navController: NavController) {
 
         Button(
             onClick = {
-
                 if (email.isBlank() || password.isBlank()) {
                     Toast.makeText(context, "Isi semua field!", Toast.LENGTH_SHORT).show()
                     return@Button
@@ -108,32 +111,40 @@ fun Login(navController: NavController) {
 
                 isLoading = true
 
-                // CALL BACKEND
-                CoroutineScope(Dispatchers.IO).launch {
+                scope.launch {
                     try {
-                        val request = UserLoginRequest(email, password)
-                        val response = ApiClient.instance.loginUser(request)
+                        val response = ApiClient.instance.loginUser(
+                            UserLoginRequest(email, password)
+                        )
 
-                        withContext(Dispatchers.Main) {
-                            isLoading = false
-                            if (response.isSuccessful && response.body()?.success == true) {
-                                Toast.makeText(context, "Login berhasil!", Toast.LENGTH_SHORT).show()
-                                navController.navigate("home") {
-                                    popUpTo("login") { inclusive = true }
-                                }
-                            } else {
-                                Toast.makeText(context, response.body()?.message ?: "Login gagal", Toast.LENGTH_SHORT).show()
+                        isLoading = false
+
+                        if (response.isSuccessful && response.body()?.success == true) {
+                            val body = response.body()!!
+
+                            // ✅ Simpan session userId
+                            sessionManager.saveUserId(body.userId)
+
+                            Toast.makeText(context, "Login berhasil!", Toast.LENGTH_SHORT).show()
+
+                            navController.navigate("home") {
+                                popUpTo("login") { inclusive = true }
                             }
+
+                        } else {
+                            Toast.makeText(
+                                context,
+                                response.body()?.message ?: "Login gagal",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
 
                     } catch (e: Exception) {
-                        withContext(Dispatchers.Main) {
-                            isLoading = false
-                            Toast.makeText(context, "Kesalahan jaringan", Toast.LENGTH_SHORT).show()
-                        }
+                        isLoading = false
+                        Toast.makeText(context, "Kesalahan jaringan", Toast.LENGTH_SHORT).show()
+                        Log.e("LOGIN_ERROR", e.toString())
                     }
                 }
-
             },
             enabled = !isLoading,
             colors = ButtonDefaults.buttonColors(containerColor = hijau30),
@@ -145,7 +156,12 @@ fun Login(navController: NavController) {
             if (isLoading) {
                 CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
             } else {
-                Text(text = "Login", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                Text(
+                    text = "Login",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White
+                )
             }
         }
 
@@ -157,10 +173,7 @@ fun Login(navController: NavController) {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Tidak memiliki akun? ", fontSize = 14.sp)
-            TextButton(
-                onClick = { navController.navigate("signup") },
-                contentPadding = PaddingValues(0.dp)
-            ) {
+            TextButton(onClick = { navController.navigate("signup") }) {
                 Text("Sign up", color = hijau30, fontWeight = FontWeight.SemiBold)
             }
         }

@@ -1,24 +1,35 @@
 package com.example.tugasbesarptb_colife.network
 
-import com.example.tugasbesarptb_colife.model.ServerResponse
-import com.example.tugasbesarptb_colife.model.UserLoginRequest
-import com.example.tugasbesarptb_colife.model.UserRegisterRequest
+import com.example.tugasbesarptb_colife.data.local.entity.Piutang
+import com.example.tugasbesarptb_colife.model.*
+import okhttp3.MultipartBody
+import okhttp3.ResponseBody
 import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.POST
+import retrofit2.http.*
 
 interface ApiService {
 
+    // ===== User =====
     @POST("api/user/register")
-    suspend fun registerUser(
-        @Body request: UserRegisterRequest
-    ): Response<ServerResponse>
+    suspend fun registerUser(@Body request: UserRegisterRequest): Response<ServerResponse>
 
     @POST("api/user/login")
-    suspend fun loginUser(
-        @Body request: UserLoginRequest
-    ): Response<ServerResponse>
+    suspend fun loginUser(@Body request: UserLoginRequest): Response<ServerResponse>
+
+    // ===== Piutang =====
+    @POST("api/piutang")
+    suspend fun createPiutang(@Body request: PiutangRequest): Response<ServerResponse>
+
+    @PUT("api/piutang/{id}")
+    suspend fun updatePiutang(@Path("id") id: Long, @Body request: PiutangUpdateRequest): Response<ServerResponse>
+
+    @GET("api/piutang/user/{id}")
+    suspend fun getPiutangByUser(@Path("id") userId: Int): List<Piutang>
+
+    @Multipart
+    @POST("api/piutang/{id}/upload")
+    suspend fun uploadBuktiPembayaran(@Path("id") piutangId: Long, @Part file: MultipartBody.Part): Response<ServerResponse>
+
+    @DELETE("api/piutang/{id}")
+    suspend fun deletePiutang(@Path("id") id: Long): Response<ResponseBody>
 }
-
-
-

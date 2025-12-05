@@ -12,11 +12,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.tugasbesarptb_colife.ui.theme.hijau30
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar() {
+fun TopBar(navController: NavHostController) { // tambahkan navController
     TopAppBar(
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -34,7 +35,9 @@ fun TopBar() {
             }
         },
         actions = {
-            IconButton(onClick = {}) {
+            IconButton(onClick = {
+                navController.navigate("notification") // navigasi ke layar notifikasi
+            }) {
                 Icon(
                     Icons.Default.Notifications,
                     contentDescription = "Notifikasi",

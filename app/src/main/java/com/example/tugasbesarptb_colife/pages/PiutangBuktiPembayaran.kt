@@ -1,12 +1,16 @@
 package com.example.tugasbesarptb_colife.pages
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.provider.MediaStore
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,9 +18,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,22 +30,75 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.example.tugasbesarptb_colife.SessionManager
+import com.example.tugasbesarptb_colife.data.local.AppDatabase
+import com.example.tugasbesarptb_colife.data.local.entity.Piutang
+import com.example.tugasbesarptb_colife.data.repository.PiutangRepository
+import com.example.tugasbesarptb_colife.network.ApiClient
+import com.example.tugasbesarptb_colife.viewmodel.PiutangViewModel
+import com.example.tugasbesarptb_colife.viewmodel.PiutangViewModelFactory
 import java.io.File
 import java.io.FileOutputStream
+import kotlin.let
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BuktiPembayaranScreen(navController: NavController) {
-    val savedPiutang = navController.previousBackStackEntry
-        ?.savedStateHandle
-        ?.get<List<Piutang>>("piutangSelesai")
+    val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
+    val userId = sessionManager.getUserId()
 
-    var daftarPiutang by remember { mutableStateOf(savedPiutang ?: emptyList()) }
-    val buktiPembayaran = remember { mutableStateMapOf<String, Uri?>() }
+    val repository = remember {
+        PiutangRepository(
+            piutangDao = AppDatabase.getInstance(context).piutangDao(),
+            apiService = ApiClient.instance,
+            userId = userId
+        )
+    }
 
-    var selectedImage by remember { mutableStateOf<Uri?>(null) } // untuk dialog lihat bukti
+    val viewModel: PiutangViewModel = viewModel(
+        factory = remember {
+            PiutangViewModelFactory(repository)
+        }
+    )
+    val allPiutang by viewModel.allPiutang.observeAsState(emptyList())
+    val piutangSelesai = allPiutang.filter { it.selesai }
+
+    // Map untuk menyimpan URI sementara, gunakan Long sebagai key
+    val buktiPembayaran = remember { mutableStateMapOf<Long, Uri?>() }
+
+    var selectedPiutangForImage by remember { mutableStateOf<Piutang?>(null) }
+    var selectedImageFullScreen by remember { mutableStateOf<Uri?>(null) }
+
+    // Launcher untuk chooser kamera + galeri
+    val chooserLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val dataIntent = result.data
+        val bitmap: Bitmap? = dataIntent?.extras?.get("data") as? Bitmap
+        val uri: Uri? = dataIntent?.data ?: bitmap?.let { saveBitmapToCache(context, it) }
+
+        uri?.let {
+            selectedPiutangForImage?.let { piutang ->
+                buktiPembayaran[piutang.id] = it // gunakan Long
+                viewModel.uploadBukti(piutang, it, context)
+            }
+        }
+    }
+
+    fun openImageChooser(piutang: Piutang) {
+        selectedPiutangForImage = piutang
+        val takePhotoIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        val pickGalleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        pickGalleryIntent.type = "image/*"
+
+        val chooser = Intent.createChooser(pickGalleryIntent, "Pilih Kamera atau Galeri")
+        chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(takePhotoIntent))
+        chooserLauncher.launch(chooser)
+    }
 
     Scaffold(
         topBar = {
@@ -55,56 +112,47 @@ fun BuktiPembayaranScreen(navController: NavController) {
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            Text(
-                "Piutang yang Sudah Selesai",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(padding)) {
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    "Piutang yang Sudah Selesai",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
 
-            if (daftarPiutang.isEmpty()) {
-                Text("Belum ada piutang selesai", color = Color.Gray)
-            } else {
-                LazyColumn {
-                    items(daftarPiutang) { item ->
-                        BuktiPembayaranCard(
-                            piutang = item,
-                            imageUri = buktiPembayaran[item.nama],
-                            onImageSelected = { uri -> buktiPembayaran[item.nama] = uri },
-                            onViewImage = { selectedImage = it }
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
+                if (piutangSelesai.isEmpty()) {
+                    Text("Belum ada piutang selesai", color = Color.Gray)
+                } else {
+                    LazyColumn {
+                        items(piutangSelesai) { item ->
+                            val uriFromDb = item.buktiPembayaranUri?.let { Uri.parse(it) }
+                            val currentUri = buktiPembayaran[item.id] ?: uriFromDb
+
+                            BuktiPembayaranCard(
+                                piutang = item,
+                                imageUri = currentUri,
+                                onCameraClick = { openImageChooser(item) },
+                                onViewImage = { selectedImageFullScreen = it }
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
                     }
                 }
             }
-        }
-        if (selectedImage != null) {
-            AlertDialog(
-                onDismissRequest = { selectedImage = null },
-                confirmButton = {
-                    TextButton(onClick = { selectedImage = null }) {
-                        Text("Tutup")
-                    }
-                },
-                text = {
-                    Image(
-                        painter = rememberAsyncImagePainter(selectedImage),
-                        contentDescription = "Bukti Pembayaran",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(300.dp)
-                            .clip(RoundedCornerShape(12.dp)),
-                        contentScale = ContentScale.Crop
-                    )
+
+            selectedImageFullScreen?.let { uri ->
+                FullScreenImageScreen(navController = navController, imageUri = uri) {
+                    selectedImageFullScreen = null
                 }
-            )
+            }
         }
     }
 }
@@ -113,19 +161,9 @@ fun BuktiPembayaranScreen(navController: NavController) {
 fun BuktiPembayaranCard(
     piutang: Piutang,
     imageUri: Uri?,
-    onImageSelected: (Uri?) -> Unit,
+    onCameraClick: () -> Unit,
     onViewImage: (Uri) -> Unit
 ) {
-    val context = LocalContext.current
-
-    val cameraLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap: Bitmap? ->
-            if (bitmap != null) {
-                val uri = saveBitmapToCache(context, bitmap)
-                onImageSelected(uri)
-            }
-        }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -140,40 +178,26 @@ fun BuktiPembayaranCard(
             ) {
                 Column {
                     Text(piutang.nama, fontWeight = FontWeight.Bold)
-                    Text(piutang.tanggalTenggat)
-                    Text(piutang.jumlah, fontWeight = FontWeight.Medium)
+                    Text(piutang.tanggalSelesai ?: "-")
+                    Text(piutang.jumlah.toString(), fontWeight = FontWeight.Bold)
                 }
 
-                // Kalau belum upload → tampilkan kamera
-                if (imageUri == null) {
-                    IconButton(onClick = { cameraLauncher.launch(null) }) {
-                        Icon(
-                            Icons.Default.CameraAlt,
-                            contentDescription = "Ambil Foto",
-                            tint = Color(0xFF5E8378)
-                        )
-                    }
-                } else {
-                    IconButton(onClick = { onViewImage(imageUri) }) {
-                        Icon(
-                            Icons.Default.Visibility,
-                            contentDescription = "Lihat Bukti",
-                            tint = Color(0xFF2E554A)
-                        )
-                    }
+                IconButton(onClick = onCameraClick) {
+                    Icon(Icons.Default.CameraAlt, contentDescription = "Pilih Gambar")
                 }
             }
 
-            if (imageUri != null) {
+            imageUri?.let {
                 Spacer(modifier = Modifier.height(8.dp))
                 Image(
-                    painter = rememberAsyncImagePainter(model = imageUri),
+                    painter = rememberAsyncImagePainter(it),
                     contentDescription = "Bukti Pembayaran",
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(180.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color.LightGray),
+                        .background(Color.LightGray)
+                        .clickable { onViewImage(it) },
                     contentScale = ContentScale.Crop
                 )
             }
@@ -181,15 +205,35 @@ fun BuktiPembayaranCard(
     }
 }
 
+@Composable
+fun FullScreenImageScreen(
+    navController: NavController,
+    imageUri: Uri,
+    onDismiss: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+            .clickable { onDismiss() },
+        contentAlignment = Alignment.Center
+    ) {
+        Image(
+            painter = rememberAsyncImagePainter(imageUri),
+            contentDescription = "Gambar Full Screen",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Fit
+        )
+    }
+}
+
 fun saveBitmapToCache(context: Context, bitmap: Bitmap): Uri? {
     return try {
         val file = File(context.cacheDir, "bukti_${System.currentTimeMillis()}.jpg")
-        FileOutputStream(file).use { out ->
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
-        }
-        Uri.parse(file.toURI().toString())
+        FileOutputStream(file).use { bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it) }
+        Uri.fromFile(file)
     } catch (e: Exception) {
-        e.printStackTrace()
+        Log.e("SaveBitmap", "Gagal menyimpan: ${e.message}")
         null
     }
 }

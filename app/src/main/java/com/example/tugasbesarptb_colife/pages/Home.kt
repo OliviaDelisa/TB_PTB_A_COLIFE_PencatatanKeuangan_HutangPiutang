@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.example.tugasbesarptb_colife.components.BottomNavBar
 import com.example.tugasbesarptb_colife.components.TopBar
 import com.example.tugasbesarptb_colife.components.TanggalPicker
@@ -38,7 +39,7 @@ fun Home(navController: NavController) {
     val tahunSekarang = SimpleDateFormat("yyyy", Locale("id", "ID")).format(date)
 
     Scaffold(
-        topBar = { TopBar() },
+        topBar = { TopBar(navController = navController as NavHostController) },
         bottomBar = { BottomNavBar(navController, currentRoute = "home") }
     ) { innerPadding ->
 

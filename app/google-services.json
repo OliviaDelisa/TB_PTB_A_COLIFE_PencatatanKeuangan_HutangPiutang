@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "608094509938",
+    "project_id": "piutang-app-ea09c",
+    "storage_bucket": "piutang-app-ea09c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:608094509938:android:f4c1215dc6ade8feb4dbeb",
+        "android_client_info": {
+          "package_name": "com.example.tugasbesarptb_colife"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7c3Jd5xzGMaPgFZXqjHrmH_g-vJdXbjE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
