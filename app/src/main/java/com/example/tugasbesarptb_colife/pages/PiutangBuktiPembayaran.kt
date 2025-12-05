@@ -1,12 +1,12 @@
 package com.example.tugasbesarptb_colife.pages
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -28,20 +28,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.example.tugasbesarptb_colife.data.local.AppDatabase
+import com.example.tugasbesarptb_colife.data.local.entity.Piutang
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BuktiPembayaranScreen(navController: NavController) {
-    val savedPiutang = navController.previousBackStackEntry
-        ?.savedStateHandle
-        ?.get<List<Piutang>>("piutangSelesai")
+    val context = LocalContext.current
+    val piutangDao = AppDatabase.getInstance(context).piutangDao()
+    val scope = rememberCoroutineScope()
 
-    var daftarPiutang by remember { mutableStateOf(savedPiutang ?: emptyList()) }
+    // Ambil data dari Room dengan Flow
+    val daftarPiutang by piutangDao.getAllPiutang().collectAsState(initial = emptyList())
+
     val buktiPembayaran = remember { mutableStateMapOf<String, Uri?>() }
-
-    var selectedImage by remember { mutableStateOf<Uri?>(null) } // untuk dialog lihat bukti
+    var selectedImage by remember { mutableStateOf<Uri?>(null) }
 
     Scaffold(
         topBar = {
@@ -72,12 +76,21 @@ fun BuktiPembayaranScreen(navController: NavController) {
             if (daftarPiutang.isEmpty()) {
                 Text("Belum ada piutang selesai", color = Color.Gray)
             } else {
-                LazyColumn {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
                     items(daftarPiutang) { item ->
+                        val uriFromDb = item.buktiPembayaranUri?.let { Uri.parse(it) }
                         BuktiPembayaranCard(
                             piutang = item,
-                            imageUri = buktiPembayaran[item.nama],
-                            onImageSelected = { uri -> buktiPembayaran[item.nama] = uri },
+                            imageUri = buktiPembayaran[item.nama] ?: uriFromDb,
+                            onImageSelected = { uri ->
+                                buktiPembayaran[item.nama] = uri
+                                if (uri != null) {
+                                    val updatedPiutang = item.copy(buktiPembayaranUri = uri.toString())
+                                    scope.launch { piutangDao.update(updatedPiutang) }
+                                }
+                            },
                             onViewImage = { selectedImage = it }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
@@ -85,6 +98,8 @@ fun BuktiPembayaranScreen(navController: NavController) {
                 }
             }
         }
+
+        // Dialog untuk melihat foto
         if (selectedImage != null) {
             AlertDialog(
                 onDismissRequest = { selectedImage = null },
@@ -99,7 +114,7 @@ fun BuktiPembayaranScreen(navController: NavController) {
                         contentDescription = "Bukti Pembayaran",
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(300.dp)
+                            .height(400.dp)
                             .clip(RoundedCornerShape(12.dp)),
                         contentScale = ContentScale.Crop
                     )
@@ -141,10 +156,13 @@ fun BuktiPembayaranCard(
                 Column {
                     Text(piutang.nama, fontWeight = FontWeight.Bold)
                     Text(piutang.tanggalTenggat)
-                    Text(piutang.jumlah, fontWeight = FontWeight.Medium)
+                    Text(
+                        text = piutang.jumlah.toString(),
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
                 }
 
-                // Kalau belum upload → tampilkan kamera
                 if (imageUri == null) {
                     IconButton(onClick = { cameraLauncher.launch(null) }) {
                         Icon(
@@ -173,7 +191,8 @@ fun BuktiPembayaranCard(
                         .fillMaxWidth()
                         .height(180.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color.LightGray),
+                        .background(Color.LightGray)
+                        .clickable { onViewImage(imageUri) },
                     contentScale = ContentScale.Crop
                 )
             }
@@ -181,13 +200,13 @@ fun BuktiPembayaranCard(
     }
 }
 
-fun saveBitmapToCache(context: Context, bitmap: Bitmap): Uri? {
+fun saveBitmapToCache(context: android.content.Context, bitmap: Bitmap): Uri? {
     return try {
-        val file = File(context.cacheDir, "bukti_${System.currentTimeMillis()}.jpg")
+        val file = File(context.filesDir, "bukti_${System.currentTimeMillis()}.jpg")
         FileOutputStream(file).use { out ->
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
         }
-        Uri.parse(file.toURI().toString())
+        Uri.fromFile(file)
     } catch (e: Exception) {
         e.printStackTrace()
         null
