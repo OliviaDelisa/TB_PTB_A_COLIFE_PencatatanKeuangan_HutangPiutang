@@ -68,7 +68,6 @@ fun DaftarPemasukanScreen(navController: NavController) {
             )
         },
         bottomBar = {
-            // Memanggil BottomNavBar dari file terpisah (components)
             BottomNavBar(navController = navController, currentRoute = currentRoute)
         },
         // floatingActionButton TIDAK DISET di sini, kita akan menempatkannya secara manual

@@ -100,7 +100,7 @@ fun Login(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { navController.navigate("daftarpemasukan") },
+            onClick = { navController.navigate("home") },
             colors = ButtonDefaults.buttonColors(containerColor = hijau30),
             shape = MaterialTheme.shapes.extraLarge,
             modifier = Modifier

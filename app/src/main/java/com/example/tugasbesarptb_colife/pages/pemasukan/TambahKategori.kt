@@ -60,7 +60,7 @@ fun TambahKategoriPengeluaranScreen(navController: NavController) {
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
+                        Icon(Icons.Default. ArrowBack, contentDescription = "Kembali")
                     }
                 },
                 actions = {

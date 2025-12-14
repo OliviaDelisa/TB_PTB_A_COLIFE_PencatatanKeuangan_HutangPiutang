@@ -25,6 +25,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.tugasbesarptb_colife.ui.theme.TugasBesarPTB_COLIFETheme
 import com.example.tugasbesarptb_colife.ui.theme.hijau30
 import com.example.tugasbesarptb_colife.components.BottomNavBar
+import com.example.tugasbesarptb_colife.components.TanggalPicker
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TambahPemasukanScreen(navController: NavController) {
@@ -33,6 +35,7 @@ fun TambahPemasukanScreen(navController: NavController) {
     var sumberPemasukan by remember { mutableStateOf("") }
     var tanggalPemasukan by remember { mutableStateOf("") }
     var jumlahPemasukan by remember { mutableStateOf("") }
+    var showDatePicker by remember { mutableStateOf(false) }
 
     val currentRoute = navController.currentBackStackEntry?.destination?.route
 
@@ -84,14 +87,12 @@ fun TambahPemasukanScreen(navController: NavController) {
             FormInput(
                 label = "Tanggal Pemasukan",
                 value = tanggalPemasukan,
-                onValueChange = { tanggalPemasukan = it },
+                onValueChange = {},
                 placeholder = "Masukkan tanggal pemasukan",
                 trailingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.CalendarToday,
-                        contentDescription = "Kalender",
-                        tint = Color.Gray
-                    )
+                    IconButton(onClick = { showDatePicker = true }) {
+                        Icon(Icons.Default.CalendarToday, contentDescription = "Pilih Tanggal")
+                    }
                 }
             )
 
@@ -141,17 +142,29 @@ fun TambahPemasukanScreen(navController: NavController) {
 
             // Tombol Simpan
             Button(
-                onClick = { /* TODO: Aksi untuk menyimpan data */ },
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = hijau30),
+                onClick = {
+                    if (sumberPemasukan.isNotBlank() && tanggalPemasukan.isNotBlank() && jumlahPemasukan.isNotBlank()) {
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("pemasukanBaru", Triple(sumberPemasukan, tanggalPemasukan, jumlahPemasukan))
+                        navController.popBackStack()
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5E8378)),
+                shape = RoundedCornerShape(30.dp),
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 24.dp)
-                    .height(50.dp)
+                    .align(Alignment.End)
+                    .height(48.dp)
+                    .width(130.dp)
             ) {
-                Text(text = "Simpan", fontSize = 16.sp)
+                Text("Simpan", fontSize = 16.sp, color = Color.White)
             }
         }
+        TanggalPicker(
+            buka = showDatePicker,
+            saatTutup = { showDatePicker = false },
+            saatDipilih = { tanggal -> tanggalPemasukan = tanggal }
+        )
     }
 }
 
@@ -187,6 +200,7 @@ private fun FormInput(
                 cursorColor = hijau30
             )
         )
+
     }
 }
 

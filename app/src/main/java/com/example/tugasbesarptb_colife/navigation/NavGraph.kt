@@ -11,6 +11,7 @@ import com.example.tugasbesarptb_colife.pages.pemasukan.DaftarPemasukanScreen
 import com.example.tugasbesarptb_colife.pages.pemasukan.TambahPemasukanScreen
 import com.example.tugasbesarptb_colife.pages.pemasukan.TambahKategoriPengeluaranScreen
 import com.example.tugasbesarptb_colife.pages.pemasukan.SummaryPengeluaranScreen
+import com.example.tugasbesarptb_colife.pages.Home
 
 
 
@@ -21,6 +22,7 @@ fun NavGraph() {
         composable("landing") { LandingPage(navController) }
         composable("login") { Login(navController) }
         composable("signup") { Daftar(navController) }
+        composable("home") { Home(navController) }
         composable("daftarpemasukan") { DaftarPemasukanScreen(navController) }
         composable("tambahpemasukan") { TambahPemasukanScreen(navController) }
         composable("tambahkategori") { TambahKategoriPengeluaranScreen(navController) }
