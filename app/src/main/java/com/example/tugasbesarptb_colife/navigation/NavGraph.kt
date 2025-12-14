@@ -23,6 +23,9 @@ import com.example.tugasbesarptb_colife.pages.TambahHutangScreen
 import com.example.tugasbesarptb_colife.pages.TambahPiutang
 import com.example.tugasbesarptb_colife.pages.pemasukan.DaftarPemasukanScreen
 import com.example.tugasbesarptb_colife.pages.pemasukan.TambahPemasukanScreen
+import com.example.tugasbesarptb_colife.pages.pemasukan.TambahKategoriPengeluaranScreen
+import com.example.tugasbesarptb_colife.pages.pemasukan.EditPemasukanScreen
+import com.example.tugasbesarptb_colife.pages.pemasukan.SummaryPengeluaranScreen
 
 @RequiresApi(Build.VERSION_CODES.O)
 
@@ -46,8 +49,8 @@ fun NavGraph(navController: NavHostController) {
         composable("profilscreen") { ProfilScreen(navController) }
         composable("daftarpemasukan") { DaftarPemasukanScreen(navController) }
         composable("tambahpemasukan") { TambahPemasukanScreen(navController) }
-
-
+        composable("tambahkategori") { TambahKategoriPengeluaranScreen(navController) }
+        composable("editpemasukan") { EditPemasukanScreen(navController) } // Disederhanakan
+        composable("summarypengeluaran") { SummaryPengeluaranScreen(navController) }
     }
 }
-

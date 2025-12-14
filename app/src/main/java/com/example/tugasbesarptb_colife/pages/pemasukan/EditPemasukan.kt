@@ -8,13 +8,12 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -33,21 +32,39 @@ import com.example.tugasbesarptb_colife.viewmodel.PemasukanViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TambahPemasukanScreen(navController: NavController) {
+fun EditPemasukanScreen(navController: NavController) { // Parameter pemasukanId dihapus
 
     val pemasukanViewModel: PemasukanViewModel = viewModel()
 
+    // Ambil ID dari SavedStateHandle
+    val pemasukanId = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("pemasukanId")
+
+    // State untuk data yang akan di-edit
     var sumberPemasukan by remember { mutableStateOf("") }
     var tanggalPemasukan by remember { mutableStateOf("") }
     var jumlahPemasukan by remember { mutableStateOf("") }
     var showDatePicker by remember { mutableStateOf(false) }
+
+    // Jika ID ditemukan, ambil data dari database
+    if (pemasukanId != null) {
+        val pemasukanState by pemasukanViewModel.getPemasukanById(pemasukanId).observeAsState()
+
+        // Update state saat data dari database diterima
+        LaunchedEffect(pemasukanState) {
+            pemasukanState?.let {
+                sumberPemasukan = it.sumber
+                tanggalPemasukan = it.tanggal
+                jumlahPemasukan = it.jumlah
+            }
+        }
+    }
 
     val currentRoute = navController.currentBackStackEntry?.destination?.route
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Tambahkan Pemasukan", fontWeight = FontWeight.Bold, fontSize = 22.sp) },
+                title = { Text("Edit Pemasukan", fontWeight = FontWeight.Bold, fontSize = 22.sp) },
                 navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Default.ArrowBack, "Kembali") } },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.White,
@@ -92,27 +109,13 @@ fun TambahPemasukanScreen(navController: NavController) {
                 trailingIcon = { Text("Rp", color = Color.Gray, modifier = Modifier.padding(end = 8.dp)) }
             )
 
-            Text("Bukti Pemasukan", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, modifier = Modifier.padding(bottom = 8.dp))
-            Button(
-                onClick = { /* TODO: Aksi upload bukti */ },
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE0EFED), contentColor = hijau30),
-                elevation = ButtonDefaults.buttonElevation(0.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.FileUpload, "Upload Icon")
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Upload")
-                }
-            }
-
             Spacer(modifier = Modifier.weight(1f))
 
             Button(
                 onClick = {
-                    if (sumberPemasukan.isNotBlank() && tanggalPemasukan.isNotBlank() && jumlahPemasukan.isNotBlank()) {
-                        val pemasukan = Pemasukan(sumber = sumberPemasukan, tanggal = tanggalPemasukan, jumlah = jumlahPemasukan)
-                        pemasukanViewModel.insert(pemasukan)
+                    if (pemasukanId != null && sumberPemasukan.isNotBlank() && tanggalPemasukan.isNotBlank() && jumlahPemasukan.isNotBlank()) {
+                        val updatedPemasukan = Pemasukan(id = pemasukanId, sumber = sumberPemasukan, tanggal = tanggalPemasukan, jumlah = jumlahPemasukan)
+                        pemasukanViewModel.update(updatedPemasukan)
                         navController.popBackStack()
                     }
                 },
@@ -164,8 +167,8 @@ private fun FormInput(
 
 @Preview(showBackground = true, device = "id:pixel_6")
 @Composable
-fun TambahPemasukanScreenPreview() {
+fun EditPemasukanScreenPreview() {
     TugasBesarPTB_COLIFETheme {
-        TambahPemasukanScreen(navController = rememberNavController())
+        EditPemasukanScreen(navController = rememberNavController())
     }
 }
