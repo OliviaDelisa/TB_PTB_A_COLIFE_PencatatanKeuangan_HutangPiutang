@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import com.example.tugasbesarptb_colife.data.local.dao.PemasukanDao
 import com.example.tugasbesarptb_colife.data.local.entity.Pemasukan
 
-@Database(entities = [Pemasukan::class], version = 1, exportSchema = false)
+@Database(entities = [Pemasukan::class], version = 2, exportSchema = false) // Naikkan versi ke 2
 abstract class PemasukanDatabase : RoomDatabase() {
 
     abstract fun pemasukanDao(): PemasukanDao
@@ -22,7 +22,9 @@ abstract class PemasukanDatabase : RoomDatabase() {
                     context.applicationContext,
                     PemasukanDatabase::class.java,
                     "pemasukan_database"
-                ).build()
+                )
+                .fallbackToDestructiveMigration() // Tambahkan ini
+                .build()
                 INSTANCE = instance
                 instance
             }

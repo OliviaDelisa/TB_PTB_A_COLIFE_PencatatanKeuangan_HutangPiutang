@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import com.example.tugasbesarptb_colife.data.local.entity.Pemasukan
 import com.example.tugasbesarptb_colife.data.local.dao.PemasukanDao
 
-class PemasukanRepository(private val pemasukanDao: PemasukanDao) {
+class  PemasukanRepository(private val pemasukanDao: PemasukanDao) {
 
     val allPemasukan: LiveData<List<Pemasukan>> = pemasukanDao.getAllPemasukan()
 

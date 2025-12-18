@@ -12,6 +12,7 @@ animationCoreLint = "1.9.3"
 foundation = "1.9.4"
 ksp = "2.1.21-2.0.1"
 runtimeLivedata = "1.9.5"
+foundationVersion = "1.10.0"
 
 
 [libraries]
@@ -33,6 +34,7 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 androidx-animation-core-lint = { group = "androidx.compose.animation", name = "animation-core-lint", version.ref = "animationCoreLint" }
 androidx-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundationVersion" }
 
 
 [plugins]

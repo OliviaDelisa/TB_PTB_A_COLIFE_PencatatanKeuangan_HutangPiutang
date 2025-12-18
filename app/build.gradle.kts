@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.androidx.animation.core.lint)
     implementation("androidx.navigation:navigation-compose:2.7.3")
     implementation(libs.androidx.runtime.livedata)
+    implementation(libs.androidx.compose.foundation)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 

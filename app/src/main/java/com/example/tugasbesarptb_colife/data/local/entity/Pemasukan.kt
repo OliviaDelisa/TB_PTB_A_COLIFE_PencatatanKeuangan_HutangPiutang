@@ -9,5 +9,6 @@ data class Pemasukan(
     val id: Int = 0,
     val sumber: String,
     val tanggal: String,
-    val jumlah: String
+    val jumlah: String,
+    val imageUri: String? = null // Kolom baru untuk path gambar
 )
