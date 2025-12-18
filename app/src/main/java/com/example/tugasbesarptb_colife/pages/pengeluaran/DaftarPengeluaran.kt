@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import com.example.tugasbesarptb_colife.ui.theme.hijau70
 
+
 data class Pengeluaran(
     val nama: String,
     val tanggal: String,

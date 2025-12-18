@@ -11,15 +11,12 @@ import androidx.navigation.navArgument
 import com.example.tugasbesarptb_colife.pages.Daftar
 import com.example.tugasbesarptb_colife.pages.LandingPage
 import com.example.tugasbesarptb_colife.pages.Login
-import com.example.tugasbesarptb_colife.pages.pengeluaran.DaftarPengeluaranScreen
-import com.example.tugasbesarptb_colife.pages.pengeluaran.EditPengeluaranScreen
-import com.example.tugasbesarptb_colife.pages.pengeluaran.Pengeluaran
-import com.example.tugasbesarptb_colife.pages.pengeluaran.TambahPengeluaranScreen
+import com.example.tugasbesarptb_colife.pages.pengeluaran.*
 
 @Composable
 fun NavGraph() {
     val navController = rememberNavController()
-    // Data dummy untuk testing
+
     val pengeluaranList = remember {
         mutableStateListOf(
             Pengeluaran("Kopi", "18 Oktober 2025", "15.000"),
@@ -27,17 +24,24 @@ fun NavGraph() {
         )
     }
 
-    NavHost(navController = navController, startDestination = "landing") {
-        composable("landing") { LandingPage(navController) }
+    NavHost(
+        navController = navController,
+        startDestination = "landing"
+    ) {
 
-        // Definisi halaman Login, yang akan dipanggil dari NavHost
+        /* ================= LANDING ================= */
+        composable("landing") {
+            LandingPage(navController)
+        }
+
+        /* ================= LOGIN ================= */
         composable("login") {
             Login(
                 navController = navController,
-                // Tambahkan lambda untuk menangani navigasi setelah login berhasil
                 onLoginSuccess = {
                     navController.navigate("daftarpengeluaran") {
-                        popUpTo("login") {
+                        // HAPUS landing & login dari back stack
+                        popUpTo("landing") {
                             inclusive = true
                         }
                     }
@@ -45,7 +49,10 @@ fun NavGraph() {
             )
         }
 
-        composable("signup") { Daftar(navController) }
+        composable("signup") {
+            Daftar(navController)
+        }
+
         composable("daftarpengeluaran") {
             DaftarPengeluaranScreen(
                 navController = navController,
@@ -62,32 +69,44 @@ fun NavGraph() {
             )
         }
 
-        // --- BLOK INI SUDAH BENAR ---
         composable("tambahpengeluaran") {
-            TambahPengeluaranScreen(navController) { pengeluaran ->
-                pengeluaranList.add(0, pengeluaran)
-                navController.popBackStack() // Kembali ke layar sebelumnya
-            }
+            TambahPengeluaranScreen(
+                navController = navController,
+                onAddPengeluaran = { pengeluaran ->
+                    pengeluaranList.add(0, pengeluaran)
+
+                    navController.navigate("daftarpengeluaran") {
+                        popUpTo("daftarpengeluaran") {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
         }
 
-        // Route untuk halaman edit
+        /* ================= EDIT PENGELUARAN ================= */
         composable(
             route = "editpengeluaran/{pengeluaranIndex}",
-            arguments = listOf(navArgument("pengeluaranIndex") { type = NavType.IntType })
+            arguments = listOf(
+                navArgument("pengeluaranIndex") {
+                    type = NavType.IntType
+                }
+            )
         ) { backStackEntry ->
-            val index = backStackEntry.arguments?.getInt("pengeluaranIndex") ?: -1
+            val index =
+                backStackEntry.arguments?.getInt("pengeluaranIndex") ?: -1
+
             if (index != -1 && index < pengeluaranList.size) {
-                val pengeluaranToEdit = pengeluaranList[index]
                 EditPengeluaranScreen(
                     navController = navController,
-                    pengeluaran = pengeluaranToEdit,
-                    onSave = { updatedPengeluaran ->
-                        pengeluaranList[index] = updatedPengeluaran
-                        navController.popBackStack()
+                    pengeluaran = pengeluaranList[index],
+                    onSave = { updated ->
+                        pengeluaranList[index] = updated
+                        navController.popBackStack() // BOLEH
                     },
                     onDelete = {
                         pengeluaranList.removeAt(index)
-                        navController.popBackStack()
+                        navController.popBackStack() // BOLEH
                     }
                 )
             }
