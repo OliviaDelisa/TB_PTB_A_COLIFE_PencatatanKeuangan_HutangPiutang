@@ -59,8 +59,17 @@ fun BottomNavBar(navController: NavController, currentRoute: String?) {
         NavigationBarItem(
             icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Pengeluaran") },
             label = { NavLabel("Pengeluaran") },
-            selected = currentRoute == "pengeluaran",
-            onClick = { navController.navigate("pengeluaran") },
+            selected = currentRoute == "daftarpengeluaran",
+            onClick = {
+                navController.navigate("daftarpengeluaran") {
+                    popUpTo(navController.graph.startDestinationId) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            },
+
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = hijau30,
                 selectedTextColor = hijau30,
