@@ -21,8 +21,8 @@ import com.example.tugasbesarptb_colife.ui.theme.TugasBesarPTB_COLIFETheme
 import com.example.tugasbesarptb_colife.components.BottomNavBar
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import com.example.tugasbesarptb_colife.data.local.entity.Pengeluaran
 import com.example.tugasbesarptb_colife.ui.theme.hijau70
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,14 +80,12 @@ fun DaftarPengeluaranScreen(
         floatingActionButtonPosition = FabPosition.End,
         containerColor = Color.White
     ) { innerPadding ->
-        // Gunakan Column untuk menampung Tombol Summary dan konten utama
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp)
         ) {
-            // --- TOMBOL SUMMARY DITAMBAHKAN DI SINI ---
             Button(
                 onClick = { /* TODO: Navigasi atau aksi untuk Summary */ },
                 modifier = Modifier
@@ -103,11 +101,9 @@ fun DaftarPengeluaranScreen(
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
-            // --- Akhir dari Tombol Summary ---
 
             if (pengeluaranList.isEmpty()) {
                 Box(
-                    // Gunakan weight agar Box mengisi sisa ruang yang tersedia
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
@@ -121,7 +117,7 @@ fun DaftarPengeluaranScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(top = 8.dp), // Beri sedikit jarak dari tombol summary
+                        .padding(top = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(pengeluaranList) { pengeluaran ->
@@ -156,8 +152,10 @@ fun PengeluaranCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(text = pengeluaran.nama, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Text(text = pengeluaran.kategori, fontSize = 14.sp, color = Color.Gray)
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(text = pengeluaran.jumlah, fontSize = 16.sp)
             }
             Column(horizontalAlignment = Alignment.End) {
@@ -183,8 +181,8 @@ fun PengeluaranScreenPreview() {
         DaftarPengeluaranScreen(
             navController = rememberNavController(),
             pengeluaranList = listOf(
-                Pengeluaran("Makanan", "19/10/25", "Rp30.000"),
-                Pengeluaran("Minuman", "30/10/25", "Rp3.300"),
+                Pengeluaran(id = 1, nama = "Makanan", tanggal = "19/10/25", jumlah = "Rp30.000", kategori = "Kebutuhan Primer"),
+                Pengeluaran(id = 2, nama = "Minuman", tanggal = "30/10/25", jumlah = "Rp3.300", kategori = "Kebutuhan Primer"),
             ),
             onDeletePengeluaran = {},
             onEditPengeluaran = {}

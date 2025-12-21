@@ -17,14 +17,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.tugasbesarptb_colife.components.TanggalPicker
+import com.example.tugasbesarptb_colife.data.local.entity.Pengeluaran
 import com.example.tugasbesarptb_colife.ui.theme.TugasBesarPTB_COLIFETheme
-
-// ✅ DIGABUNG DI FILE INI (AMAN)
-data class Pengeluaran(
-    val nama: String,
-    val tanggal: String,
-    val jumlah: String
-)
 
 @Composable
 fun TambahPengeluaranScreen(
@@ -34,6 +28,7 @@ fun TambahPengeluaranScreen(
     var nama by remember { mutableStateOf("") }
     var tanggal by remember { mutableStateOf("") }
     var jumlah by remember { mutableStateOf("") }
+    var kategori by remember { mutableStateOf("") }
     var bukaTanggalPicker by remember { mutableStateOf(false) }
 
     // DATE PICKER
@@ -95,12 +90,13 @@ fun TambahPengeluaranScreen(
                 shape = RoundedCornerShape(16.dp)
             )
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(16.dp))
+
             Text("Kategori Pengeluaran")
             OutlinedTextField(
-                value = jumlah,
-                onValueChange = { jumlah = it },
-                trailingIcon = { Text("Rp") },
+                value = kategori,
+                onValueChange = { kategori = it },
+                placeholder = { Text("Masukkan kategori") },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp)
             )
@@ -127,9 +123,8 @@ fun TambahPengeluaranScreen(
                 Button(
                     onClick = {
                         onAddPengeluaran(
-                            Pengeluaran(nama, tanggal, jumlah)
+                            Pengeluaran(nama = nama, tanggal = tanggal, jumlah = jumlah, kategori = kategori)
                         )
-                        navController.popBackStack()
                     },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(

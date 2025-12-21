@@ -3,28 +3,33 @@ package com.example.tugasbesarptb_colife.navigation
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.tugasbesarptb_colife.CoLifeApplication
 import com.example.tugasbesarptb_colife.pages.*
 import com.example.tugasbesarptb_colife.pages.pemasukan.*
 import com.example.tugasbesarptb_colife.pages.pengeluaran.*
+import com.example.tugasbesarptb_colife.pages.pengeluaran.viewmodel.PengeluaranViewModel
+import com.example.tugasbesarptb_colife.pages.pengeluaran.viewmodel.PengeluaranViewModelFactory
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NavGraph(navController: NavHostController) {
 
-    /* ================= STATE PENGELUARAN ================= */
-    val pengeluaranList = remember {
-        mutableStateListOf(
-            Pengeluaran("Kopi", "18 Oktober 2025", "15.000"),
-            Pengeluaran("Nasi Goreng", "17 Oktober 2025", "25.000")
-        )
-    }
+    val context = LocalContext.current
+    val application = context.applicationContext as CoLifeApplication
+    val viewModel: PengeluaranViewModel = viewModel(
+        factory = PengeluaranViewModelFactory(application.pengeluaranRepository)
+    )
+
+    val pengeluaranList by viewModel.allPengeluaran.collectAsState()
 
     NavHost(
         navController = navController,
@@ -50,7 +55,7 @@ fun NavGraph(navController: NavHostController) {
         composable("daftarpemasukan") { DaftarPemasukanScreen(navController) }
         composable("tambahpemasukan") { TambahPemasukanScreen(navController) }
 
-        /* ================= PENGELUARAN (DITAMBAHKAN) ================= */
+        /* ================= PENGELUARAN (DIPERBARUI) ================= */
 
         // LIST
         composable("daftarpengeluaran") {
@@ -58,13 +63,10 @@ fun NavGraph(navController: NavHostController) {
                 navController = navController,
                 pengeluaranList = pengeluaranList,
                 onDeletePengeluaran = { pengeluaran ->
-                    pengeluaranList.remove(pengeluaran)
+                    viewModel.delete(pengeluaran)
                 },
                 onEditPengeluaran = { pengeluaran ->
-                    val index = pengeluaranList.indexOf(pengeluaran)
-                    if (index != -1) {
-                        navController.navigate("editpengeluaran/$index")
-                    }
+                    navController.navigate("editpengeluaran/${pengeluaran.id}")
                 }
             )
         }
@@ -74,43 +76,29 @@ fun NavGraph(navController: NavHostController) {
             TambahPengeluaranScreen(
                 navController = navController,
                 onAddPengeluaran = { pengeluaran ->
-                    pengeluaranList.add(0, pengeluaran)
-                    navController.navigate("daftarpengeluaran") {
-                        popUpTo("tambahpengeluaran") {
-                            inclusive = true
-                        }
-                    }
+                    viewModel.insert(pengeluaran)
+                    navController.popBackStack()
                 }
             )
         }
 
-
-        // EDIT (PAKAI INDEX)
+        // EDIT (DIPERBARUI)
         composable(
-            route = "editpengeluaran/{pengeluaranIndex}",
+            route = "editpengeluaran/{pengeluaranId}",
             arguments = listOf(
-                navArgument("pengeluaranIndex") {
+                navArgument("pengeluaranId") {
                     type = NavType.IntType
                 }
             )
         ) { backStackEntry ->
-            val index =
-                backStackEntry.arguments?.getInt("pengeluaranIndex") ?: -1
+            val id = backStackEntry.arguments?.getInt("pengeluaranId") ?: -1
 
-            if (index != -1 && index < pengeluaranList.size) {
-                EditPengeluaranScreen(
-                    navController = navController,
-                    pengeluaran = pengeluaranList[index],
-                    onSave = { updated ->
-                        pengeluaranList[index] = updated
-                        navController.popBackStack()
-                    },
-                    onDelete = {
-                        pengeluaranList.removeAt(index)
-                        navController.popBackStack()
-                    }
-                )
-            }
+            // ✅ Panggil EditPengeluaranScreen dengan id dan viewModel
+            EditPengeluaranScreen(
+                navController = navController,
+                pengeluaranId = id,
+                viewModel = viewModel
+            )
         }
     }
 }
