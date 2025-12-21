@@ -30,9 +30,7 @@ fun HutangScreen(navController: NavHostController) {
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
 
-    // =====================================================
-    //  REFRESH jika ada perubahan dari Edit / Mark Done
-    // =====================================================
+    // ================= REFRESH =================
     val refresh = navController.currentBackStackEntry
         ?.savedStateHandle
         ?.getStateFlow<Boolean>("refresh", false)
@@ -45,15 +43,14 @@ fun HutangScreen(navController: NavHostController) {
                 onError = { error = it },
                 setLoading = { loading = it }
             )
-
-            navController.currentBackStackEntry?.savedStateHandle?.set("refresh", false)
+            navController.currentBackStackEntry
+                ?.savedStateHandle
+                ?.set("refresh", false)
         }
     }
 
-    // =====================================================
-    //  LOAD DATA PERTAMA KALI
-    // =====================================================
-    LaunchedEffect(true) {
+    // ================= FIRST LOAD =================
+    LaunchedEffect(Unit) {
         loadHutangData(
             onSuccess = { hutangList = it },
             onError = { error = it },
@@ -63,13 +60,43 @@ fun HutangScreen(navController: NavHostController) {
 
     Scaffold(
         bottomBar = { BottomNavBar(navController, "hutang") },
+
+        // 🔥 DUA FAB SEKALIGUS
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { navController.navigate("tambahhutang") },
-                containerColor = Color(0xFF4A9C90),
-                contentColor = Color.White
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 30.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Tambah")
+
+                // ================= STRUK HUTANG (KIRI) =================
+                FloatingActionButton(
+                    onClick = {
+                        navController.navigate("strukhutang")
+                    },
+                    containerColor = Color(0xFF4A9C90),
+                    contentColor = Color.White
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Tambah Struk Hutang"
+                    )
+                }
+
+                // ================= TAMBAH HUTANG (KANAN) =================
+                FloatingActionButton(
+                    onClick = {
+                        navController.navigate("tambahhutang")
+                    },
+                    containerColor = Color(0xFF4A9C90),
+                    contentColor = Color.White
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Tambah Hutang"
+                    )
+                }
             }
         }
     ) { inner ->
@@ -82,7 +109,7 @@ fun HutangScreen(navController: NavHostController) {
 
             // ================= TITLE =================
             Text(
-                "List Hutang",
+                text = "List Hutang",
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(start = 20.dp, top = 20.dp)
             )
@@ -98,96 +125,93 @@ fun HutangScreen(navController: NavHostController) {
             }
 
             // ================= LOADING =================
-            if (loading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            }
+            when {
+                loading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
 
-            // ================= ERROR =================
-            else if (error != null) {
-                Text(error ?: "", modifier = Modifier.align(Alignment.Center))
-            }
+                error != null -> {
+                    Text(error ?: "", modifier = Modifier.align(Alignment.Center))
+                }
 
-            // ================= EMPTY =================
-            else if (hutangList.isEmpty()) {
-                Text(
-                    "Belum ada hutang",
-                    color = Color.Gray,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
+                hutangList.isEmpty() -> {
+                    Text(
+                        "Belum ada hutang",
+                        color = Color.Gray,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
 
-            // ================= LIST =================
-            else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 80.dp)
-                ) {
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 80.dp)
+                    ) {
+                        items(hutangList) { item ->
 
-                    items(hutangList) { item ->
+                            HutangCard(
+                                item = item,
 
-                        HutangCard(
-                            item = item,
+                                // ===== SELESAI =====
+                                onMarkDone = {
+                                    scope.launch {
+                                        try {
+                                            val res = ApiClient.instance.selesaiHutang(item.id)
+                                            if (res.isSuccessful && res.body()?.success == true) {
 
-                            // =====================================================
-                            //  ✔ SUCCESS (mark as done)
-                            // =====================================================
-                            onMarkDone = {
-                                scope.launch {
-                                    try {
-                                        val res = ApiClient.instance.selesaiHutang(item.id)
+                                                hutangList =
+                                                    hutangList.filter { it.id != item.id }
 
-                                        if (res.isSuccessful && res.body()?.success == true) {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Hutang selesai!",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
 
-                                            // A. HAPUS dari list utama
-                                            hutangList = hutangList.filter { it.id != item.id }
-
-                                            // B. KIRIM ke history
-                                            navController.currentBackStackEntry
-                                                ?.savedStateHandle
-                                                ?.set("pushHistory", item)
-
-                                            Toast.makeText(context, "Hutang selesai!", Toast.LENGTH_SHORT).show()
-
-                                        } else {
-                                            Toast.makeText(context, "Gagal memperbarui data", Toast.LENGTH_SHORT).show()
+                                            } else {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Gagal memperbarui data",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        } catch (e: Exception) {
+                                            Toast.makeText(
+                                                context,
+                                                "Tidak dapat terhubung ke server",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
                                         }
+                                    }
+                                },
 
-                                    } catch (e: Exception) {
-                                        Toast.makeText(context, "Tidak dapat terhubung ke server", Toast.LENGTH_SHORT).show()
+                                // ===== EDIT =====
+                                onEdit = {
+                                    navController.currentBackStackEntry
+                                        ?.savedStateHandle
+                                        ?.set("editData", item)
+                                    navController.navigate("edithutang")
+                                },
+
+                                // ===== DELETE =====
+                                onDelete = {
+                                    scope.launch {
+                                        try {
+                                            val res = ApiClient.instance.deleteHutang(item.id)
+                                            if (res.isSuccessful && res.body()?.success == true) {
+                                                hutangList =
+                                                    hutangList.filter { it.id != item.id }
+                                            } else {
+                                                error = "Gagal menghapus data"
+                                            }
+                                        } catch (e: Exception) {
+                                            error = "Tidak dapat terhubung ke server"
+                                        }
                                     }
                                 }
-                            },
-
-                            // =====================================================
-                            //  ✏ EDIT
-                            // =====================================================
-                            onEdit = {
-                                navController.currentBackStackEntry
-                                    ?.savedStateHandle
-                                    ?.set("editData", item)
-
-                                navController.navigate("edithutang")
-                            },
-
-                            // =====================================================
-                            //  🗑 DELETE
-                            // =====================================================
-                            onDelete = {
-                                scope.launch {
-                                    try {
-                                        val res = ApiClient.instance.deleteHutang(item.id)
-                                        if (res.isSuccessful && res.body()?.success == true) {
-                                            hutangList = hutangList.filter { it.id != item.id }
-                                        } else {
-                                            error = "Gagal menghapus data"
-                                        }
-                                    } catch (e: Exception) {
-                                        error = "Tidak dapat terhubung ke server"
-                                    }
-                                }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }
@@ -196,7 +220,7 @@ fun HutangScreen(navController: NavHostController) {
 }
 
 // =====================================================
-//  FUNCTION: load data
+//  LOAD DATA FUNCTION
 // =====================================================
 suspend fun loadHutangData(
     onSuccess: (List<HutangItem>) -> Unit,

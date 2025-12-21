@@ -1,5 +1,6 @@
 package com.example.tugasbesarptb_colife.network
 
+
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -14,15 +15,27 @@ object ApiClient {
     }
 
     private val client = OkHttpClient.Builder()
+        .addInterceptor { chain ->
+            val request = chain.request().newBuilder()
+                .addHeader("Accept", "application/json")
+                .addHeader("Content-Type", "application/json")
+                // kalau backend pakai auth token:
+                // .addHeader("Authorization", "Bearer $TOKEN")
+                .build()
+            chain.proceed(request)
+        }
         .addInterceptor(logging)
         .build()
 
-    val instance: ApiService by lazy {
+    private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(ApiService::class.java)
+    }
+
+    val instance: ApiService by lazy {
+        retrofit.create(ApiService::class.java)
     }
 }

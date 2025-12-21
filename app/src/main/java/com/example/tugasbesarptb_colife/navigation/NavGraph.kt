@@ -45,6 +45,7 @@ fun NavGraph(navController: NavHostController) {
         composable("profilscreen") { ProfilScreen(navController) }
         composable("daftarpemasukan") { DaftarPemasukanScreen(navController) }
         composable("tambahpemasukan") { TambahPemasukanScreen(navController) }
+
     }
 }
 

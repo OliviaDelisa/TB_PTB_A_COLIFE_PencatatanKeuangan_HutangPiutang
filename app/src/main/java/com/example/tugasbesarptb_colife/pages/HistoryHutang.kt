@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,73 +13,63 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.tugasbesarptb_colife.model.HutangItem
+import com.example.tugasbesarptb_colife.network.ApiClient   // ⬅️ INI YANG KURANG
 import com.example.tugasbesarptb_colife.ui.theme.TugasBesarPTB_COLIFETheme
 
 @Composable
 fun HistoryHutangScreen(navController: NavHostController) {
 
-    TugasBesarPTB_COLIFETheme {
+    var historyList by remember { mutableStateOf<List<HutangItem>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
 
-        // =========================================================
-        //  LIST HISTORY (disimpan agar tidak hilang)
-        // =========================================================
-        var historyList by remember { mutableStateOf<List<HutangItem>>(emptyList()) }
-
-        // =========================================================
-        //  AMBIL DATA YANG DIPUSH DARI HutangScreen (pushHistory)
-        //  setiap kali ada data baru → tambah ke historyList
-        // =========================================================
-        val pushedItem = navController.currentBackStackEntry
-            ?.savedStateHandle
-            ?.getStateFlow<HutangItem?>("pushHistory", null)
-            ?.collectAsState()
-
-        LaunchedEffect(pushedItem?.value) {
-            pushedItem?.value?.let { newItem ->
-                historyList = historyList + newItem
-
-                // reset agar tidak menambah lagi
-                navController.currentBackStackEntry
-                    ?.savedStateHandle
-                    ?.set("pushHistory", null)
+    LaunchedEffect(Unit) {
+        try {
+            val response = ApiClient.instance.getHistoryHutang()
+            if (response.isSuccessful) {
+                historyList = response.body()?.data ?: emptyList()
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            isLoading = false
         }
+    }
 
-        // =========================================================
-        //  UI START
-        // =========================================================
+    TugasBesarPTB_COLIFETheme {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
         ) {
 
-            // ------------------ TITLE ------------------
             Text(
                 text = "History Hutang",
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(start = 20.dp, top = 20.dp)
             )
 
-            // ------------------ EMPTY STATE ------------------
-            if (historyList.isEmpty()) {
-                Text(
-                    text = "Belum ada history hutang",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.Gray,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
+            when {
+                isLoading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
 
-            // ------------------ LIST HISTORY ------------------
-            else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 80.dp)
-                ) {
-                    items(historyList) { item ->
-                        HistoryCard(item)
+                historyList.isEmpty() -> {
+                    Text(
+                        text = "Belum ada history hutang",
+                        color = Color.Gray,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 80.dp)
+                    ) {
+                        items(historyList) { item ->
+                            HistoryCard(item)
+                        }
                     }
                 }
             }
@@ -94,13 +83,12 @@ fun HistoryCard(item: HutangItem) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 10.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9))
+        shape = MaterialTheme.shapes.medium
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(item.nama, style = MaterialTheme.typography.bodyLarge)
+            Text(item.nama, fontWeight = FontWeight.Bold)
             Text("Tanggal: ${item.tanggal}", color = Color.Gray)
-            Text("Jumlah: Rp${item.jumlah}", fontWeight = FontWeight.Bold)
+            Text("Jumlah: Rp${item.jumlah}")
         }
     }
 }

@@ -61,6 +61,7 @@ dependencies {
     implementation("androidx.preference:preference:1.2.1")
     implementation(libs.androidx.animation.core.lint)
     implementation(libs.androidx.compose.foundation)
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.2")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
