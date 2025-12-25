@@ -1,163 +1,161 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../config/db");
+const multer = require("multer");
+const path = require("path");
 
 // =========================
-//  ADD HUTANG
+//  1. SETUP PENYIMPANAN GAMBAR
 // =========================
+const storage = multer.diskStorage({
+  destination: "uploads/",
+  filename: (req, file, cb) => {
+    // Nama file unik: angka_acak + waktu + ekstensi asli
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage });
+
+// =========================
+//  2. FITUR UTAMA (HUTANG)
+// =========================
+
+// ADD HUTANG
 router.post("/add", (req, res) => {
   const { nama, tanggal, jumlah } = req.body;
-
   if (!nama || !tanggal || jumlah == null) {
-    return res.status(400).json({
-      success: false,
-      message: "Data tidak lengkap",
-    });
+    return res.status(400).json({ success: false, message: "Data tidak lengkap" });
   }
-
-  const query = `
-      INSERT INTO hutang (nama, tanggal, jumlah)
-      VALUES (?, ?, ?)
-  `;
-
+  const query = "INSERT INTO hutang (nama, tanggal, jumlah) VALUES (?, ?, ?)";
   db.query(query, [nama, tanggal, jumlah], (err) => {
-    if (err) {
-      console.error("Error Insert Hutang:", err);
-      return res.status(500).json({
-        success: false,
-        message: "Gagal menambahkan hutang",
-      });
-    }
-
-    res.json({
-      success: true,
-      message: "Hutang berhasil ditambahkan!",
-    });
+    if (err) return res.status(500).json({ success: false, message: "Gagal tambah hutang" });
+    res.json({ success: true, message: "Hutang berhasil ditambahkan" });
   });
 });
 
-// =========================
-//  GET ALL HUTANG
-// =========================
+// GET ALL HUTANG
 router.get("/", (req, res) => {
-  const query = `
-      SELECT * FROM hutang
-      ORDER BY id DESC
-  `;
-
+  const query = "SELECT * FROM hutang ORDER BY id DESC";
   db.query(query, (err, result) => {
-    if (err) {
-      console.error("Error Get Hutang:", err);
-      return res.status(500).json({
-        success: false,
-        message: "Gagal mengambil data hutang",
-      });
-    }
-
-    res.json({
-      success: true,
-      data: result,
-    });
+    if (err) return res.status(500).json({ success: false, message: "Error ambil data" });
+    res.json({ success: true, data: result });
   });
 });
 
-// =========================
-//  DELETE HUTANG
-// =========================
-router.delete("/delete/:id", (req, res) => {
-  const { id } = req.params;
-
-  const query = "DELETE FROM hutang WHERE id = ?";
-
-  db.query(query, [id], (err) => {
-    if (err) {
-      console.error("Error Delete Hutang:", err);
-      return res.status(500).json({
-        success: false,
-        message: "Gagal menghapus hutang",
-      });
-    }
-
-    res.json({
-      success: true,
-      message: "Hutang berhasil dihapus",
-    });
-  });
-});
-
-// =========================
-//  UPDATE HUTANG
-// =========================
+// UPDATE HUTANG
 router.put("/update/:id", (req, res) => {
   const { id } = req.params;
   const { nama, tanggal, jumlah } = req.body;
-
-  if (!nama || !tanggal || jumlah == null) {
-    return res.status(400).json({
-      success: false,
-      message: "Data tidak lengkap",
-    });
-  }
-
-  const query = `
-      UPDATE hutang
-      SET nama = ?, tanggal = ?, jumlah = ?
-      WHERE id = ?
-  `;
-
-  db.query(query, [nama, tanggal, jumlah, id], (err, result) => {
-    if (err) {
-      console.error("Error Update Hutang:", err);
-      return res.status(500).json({
-        success: false,
-        message: "Gagal memperbarui hutang",
-      });
-    }
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Data hutang tidak ditemukan",
-      });
-    }
-
-    res.json({
-      success: true,
-      message: "Hutang berhasil diperbarui",
-    });
+  const query = "UPDATE hutang SET nama = ?, tanggal = ?, jumlah = ? WHERE id = ?";
+  db.query(query, [nama, tanggal, jumlah, id], (err) => {
+    if (err) return res.status(500).json({ success: false, message: "Gagal update" });
+    res.json({ success: true, message: "Hutang diperbarui" });
   });
 });
 
-// =========================
-//  TANDAI HUTANG SELESAI
-// =========================
-router.put("/selesai/:id", (req, res) => {
+// DELETE HUTANG
+router.delete("/delete/:id", (req, res) => {
   const { id } = req.params;
+  const query = "DELETE FROM hutang WHERE id = ?";
+  db.query(query, [id], (err) => {
+    if (err) return res.status(500).json({ success: false, message: "Gagal hapus" });
+    res.json({ success: true, message: "Hutang dihapus" });
+  });
+});
 
-  const query = `
-      UPDATE hutang 
-      SET status = 1
-      WHERE id = ?
-  `;
-
-  db.query(query, [id], (err, result) => {
-    if (err) {
-      console.error("Error update selesai:", err);
-      return res.status(500).json({
-        success: false,
-        message: "Gagal menandai hutang selesai"
+// SELESAIKAN HUTANG (PINDAH KE HISTORY)
+router.post("/selesai/:id", (req, res) => {
+  const { id } = req.params;
+  const selectQuery = "SELECT * FROM hutang WHERE id = ?";
+  
+  db.query(selectQuery, [id], (err, result) => {
+    if (err || result.length === 0) return res.status(404).json({ success: false, message: "Hutang tak ditemukan" });
+    const h = result[0];
+    const insertHistory = "INSERT INTO history_hutang (nama, tanggal, jumlah) VALUES (?, ?, ?)";
+    
+    db.query(insertHistory, [h.nama, h.tanggal, h.jumlah], (err2) => {
+      if (err2) return res.status(500).json({ success: false, message: "Gagal history" });
+      
+      db.query("DELETE FROM hutang WHERE id = ?", [id], (err3) => {
+        if (err3) return res.status(500).json({ success: false, message: "Gagal hapus lama" });
+        res.json({ success: true, message: "Lunas! Masuk history." });
       });
-    }
-
-    return res.json({
-      success: true,
-      message: "Hutang berhasil ditandai selesai"
     });
   });
 });
 
+// GET HISTORY
+router.get("/history", (req, res) => {
+  const query = "SELECT * FROM history_hutang ORDER BY tanggal_selesai DESC";
+  db.query(query, (err, result) => {
+    if (err) return res.status(500).json({ success: false, message: "Gagal history" });
+    res.json({ success: true, data: result });
+  });
+});
 
-// =========================
-//  EXPORT ROUTER
-// =========================
+// ================================================================
+//  3. FITUR GAMBAR BUKTI (UPLOAD, LIHAT, HAPUS)
+// ================================================================
+
+// A. UPLOAD GAMBAR (Simpan ke tabel gambarhutang)
+router.post("/upload-bukti", upload.single("image"), (req, res) => {
+    const hutangId = req.body.hutang_id;
+    
+    if (!req.file || !hutangId) {
+      return res.status(400).json({
+        success: false, 
+        message: "File gambar atau ID Hutang tidak ada!" 
+      });
+    }
+  
+    // Simpan path relatif (folder/namafile.jpg)
+    // Nanti Android yang akan menambahkan http://IP-ADDRESS/ di depannya
+    const imagePath = "uploads/" + req.file.filename;
+  
+    const query = `INSERT INTO gambarhutang (hutang_id, image_url) VALUES (?, ?)`;
+  
+    db.query(query, [hutangId, imagePath], (err, result) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Gagal simpan ke database" });
+      }
+  
+      res.json({
+        success: true,
+        message: "Gambar berhasil disimpan!",
+        data: {
+            id: result.insertId,
+            image_url: imagePath
+        }
+      });
+    });
+});
+
+// B. AMBIL LIST GAMBAR (Berdasarkan ID Hutang) -> Supaya Auto Load
+router.get("/gambar/:id", (req, res) => {
+    const id = req.params.id;
+    const query = "SELECT * FROM gambarhutang WHERE hutang_id = ? ORDER BY created_at DESC";
+    
+    db.query(query, [id], (err, result) => {
+        if (err) return res.status(500).json({ success: false, message: "Gagal ambil gambar" });
+        
+        res.json({
+            success: true,
+            data: result // Array berisi list gambar
+        });
+    });
+});
+
+// C. HAPUS GAMBAR SATUAN
+router.delete("/gambar/delete/:id", (req, res) => {
+    const id = req.params.id;
+    // Kita hapus datanya dari tabel gambarhutang
+    db.query("DELETE FROM gambarhutang WHERE id = ?", [id], (err) => {
+        if (err) return res.status(500).json({ success: false, message: "Gagal hapus gambar" });
+        res.json({ success: true, message: "Gambar berhasil dihapus" });
+    });
+});
+
 module.exports = router;
