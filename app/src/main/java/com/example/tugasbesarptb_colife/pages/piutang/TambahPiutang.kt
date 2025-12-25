@@ -1,13 +1,14 @@
-package com.example.tugasbesarptb_colife.pages
+package com.example.tugasbesarptb_colife.pages.piutang
 
-import android.os.Parcelable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -18,24 +19,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import com.example.tugasbesarptb_colife.SessionManager
-import com.example.tugasbesarptb_colife.components.BottomNavBar
-import com.example.tugasbesarptb_colife.components.TopBar
 import com.example.tugasbesarptb_colife.components.TanggalPicker
-import com.example.tugasbesarptb_colife.data.local.AppDatabase
 import com.example.tugasbesarptb_colife.data.repository.PiutangRepository
+import com.example.tugasbesarptb_colife.getCurrentDate
 import com.example.tugasbesarptb_colife.viewmodel.PiutangViewModel
 import com.example.tugasbesarptb_colife.viewmodel.PiutangViewModelFactory
+import com.example.tugasbesarptb_colife.SessionManager
+import com.example.tugasbesarptb_colife.data.local.AppDatabase
 import com.example.tugasbesarptb_colife.data.local.entity.Piutang
 import com.example.tugasbesarptb_colife.network.ApiClient
-import kotlinx.coroutines.launch
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditPiutangScreen(navController: NavController) {
+fun TambahPiutang(navController: NavController) {
     val context = LocalContext.current
     val userId = SessionManager(context).getUserId().toInt()
-
     val repository = remember {
         PiutangRepository(
             piutangDao = AppDatabase.getInstance(context).piutangDao(),
@@ -44,56 +43,60 @@ fun EditPiutangScreen(navController: NavController) {
         )
     }
 
+
     val viewModel: PiutangViewModel = viewModel(
         factory = remember {
             PiutangViewModelFactory(repository)
-        }
+        },
     )
-    val piutangToEdit = navController.previousBackStackEntry
-        ?.savedStateHandle
-        ?.get<Parcelable>("piutangToEdit") as? Piutang
-
-    var nama by remember { mutableStateOf(piutangToEdit?.nama ?: "") }
-    var tanggalTagihan by remember { mutableStateOf(piutangToEdit?.tanggalTenggat ?: "") }
-    var jumlahText by remember { mutableStateOf(piutangToEdit?.jumlah?.toString() ?: "") }
+    var nama by remember { mutableStateOf("") }
+    var tanggalTagihan by remember { mutableStateOf("") }
+    var jumlah by remember { mutableStateOf("") }
     var showDatePicker by remember { mutableStateOf(false) }
 
-    val scope = rememberCoroutineScope()
+    val today = getCurrentDate() // yyyy-MM-dd
 
     Scaffold(
-        topBar = { TopBar(navController = navController as NavHostController) },
-        bottomBar = { BottomNavBar(navController, currentRoute = "hutang") }
-    ) { padding ->
+        topBar = {
+            TopAppBar(
+                title = { Text("Tambah Piutang", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
+                    }
+                }
+            )
+        }
+    )
+    { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 24.dp, vertical = 16.dp)
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.Top
         ) {
-            Text(
-                text = "Edit Daftar Piutang",
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp,
-                modifier = Modifier.padding(bottom = 24.dp)
-            )
-
+            // Field Nama
             OutlinedTextField(
                 value = nama,
                 onValueChange = { nama = it },
                 label = { Text("Nama Peminjam") },
+                placeholder = { Text("Masukkan nama yang berhutang") },
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Field Tanggal Tagihan
             OutlinedTextField(
                 value = tanggalTagihan,
-                onValueChange = {},
+                onValueChange = { tanggalTagihan = it },
                 label = { Text("Tanggal Tagihan") },
+                placeholder = { Text("Masukkan tanggal pengembalian") },
                 trailingIcon = {
                     IconButton(onClick = { showDatePicker = true }) {
-                        Icon(Icons.Default.CalendarToday, contentDescription = null)
+                        Icon(Icons.Default.CalendarToday, contentDescription = "Pilih Tanggal")
                     }
                 },
                 readOnly = true,
@@ -103,38 +106,35 @@ fun EditPiutangScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Field Jumlah
             OutlinedTextField(
-                value = jumlahText,
-                onValueChange = { if (it.all(Char::isDigit)) jumlahText = it },
+                value = jumlah,
+                onValueChange = { if (it.all { c -> c.isDigit() }) jumlah = it },
                 label = { Text("Jumlah Pinjaman") },
+                placeholder = { Text("Masukkan nominal") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                trailingIcon = { Text("Rp", color = Color.Gray) },
+                trailingIcon = { Text("Rp", color = Color.Gray, fontWeight = FontWeight.Medium) },
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Tombol Simpan
             Button(
                 onClick = {
-                    if (
-                        piutangToEdit != null &&
-                        piutangToEdit.userId == userId &&
-                        nama.isNotBlank() &&
-                        tanggalTagihan.isNotBlank() &&
-                        jumlahText.isNotBlank()
-                    ) {
-                        val updatedPiutang = piutangToEdit.copy(
+                    if (nama.isNotBlank() && tanggalTagihan.isNotBlank() && jumlah.isNotBlank()) {
+                        val piutang = Piutang(
+                            userId = 0,
                             nama = nama,
-                            jumlah = jumlahText.toInt(),
-                            tanggalTenggat = tanggalTagihan
+                            jumlah = jumlah.toInt(),
+                            tanggalTenggat = tanggalTagihan,
+                            tanggalDibuat = getCurrentDate(),
+                            tanggalSelesai = null,
+                            selesai = false
                         )
-
-                        scope.launch {
-                            viewModel.updatePiutang(updatedPiutang)
-                            viewModel.syncPendingPiutang()
-                            navController.popBackStack()
-                        }
+                        viewModel.insertPiutang(piutang)
+                        navController.popBackStack()
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5E8378)),
@@ -144,15 +144,18 @@ fun EditPiutangScreen(navController: NavController) {
                     .height(48.dp)
                     .width(130.dp)
             ) {
-                Text("Simpan", color = Color.White)
+                Text("Simpan", fontSize = 16.sp, color = Color.White)
             }
         }
 
-        // Date picker di luar Column
+        // Panggilan TanggalPicker hanya sekali dengan tanggalMin
         TanggalPicker(
             buka = showDatePicker,
+            tanggalMin = today,
             saatTutup = { showDatePicker = false },
             saatDipilih = { tanggal -> tanggalTagihan = tanggal }
         )
     }
 }
+
+
