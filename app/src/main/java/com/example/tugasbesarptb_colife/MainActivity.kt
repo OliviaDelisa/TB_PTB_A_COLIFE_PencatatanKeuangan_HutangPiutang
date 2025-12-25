@@ -16,30 +16,27 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
-    private val userId = 1 // sementara, nanti diambil dari login
+    private val userId = 1 
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        // Inisialisasi Repository Piutang tanpa FCM
+        
         val piutangRepository = PiutangRepository(
             piutangDao = AppDatabase.getInstance(applicationContext).piutangDao(),
             apiService = ApiClient.instance,
             userId = userId
         )
-
-        // Sinkronisasi data pending
         lifecycleScope.launch {
             try {
                 piutangRepository.syncPending()
             } catch (e: Exception) {
-                e.printStackTrace() // tangani error agar tidak crash
+                e.printStackTrace() 
             }
         }
 
-        // Set UI
+
         setContent {
             val navController = rememberNavController()
             NavGraph(navController)
@@ -49,7 +46,6 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
 
-        // Sinkronisasi ulang data pending setiap resume
         val piutangRepository = PiutangRepository(
             piutangDao = AppDatabase.getInstance(applicationContext).piutangDao(),
             apiService = ApiClient.instance,
