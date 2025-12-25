@@ -4,7 +4,7 @@ object NotifikasiStorage {
     private val notifications = mutableListOf<String>()
 
     fun addNotification(message: String) {
-        notifications.add(0, message) // tambahkan di depan supaya notif terbaru muncul dulu
+        notifications.add(0, message) 
     }
 
     fun getNotifications(): List<String> = notifications
