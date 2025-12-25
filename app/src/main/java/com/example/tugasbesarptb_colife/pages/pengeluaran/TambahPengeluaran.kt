@@ -1,5 +1,9 @@
 package com.example.tugasbesarptb_colife.pages.pengeluaran
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -10,15 +14,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.tugasbesarptb_colife.components.TanggalPicker
 import com.example.tugasbesarptb_colife.data.local.entity.Pengeluaran
 import com.example.tugasbesarptb_colife.ui.theme.TugasBesarPTB_COLIFETheme
+import java.io.File
 
 @Composable
 fun TambahPengeluaranScreen(
@@ -30,6 +39,26 @@ fun TambahPengeluaranScreen(
     var jumlah by remember { mutableStateOf("") }
     var kategori by remember { mutableStateOf("") }
     var bukaTanggalPicker by remember { mutableStateOf(false) }
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var showDialog by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri ->
+            imageUri = uri
+        }
+    )
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture(),
+        onResult = { success ->
+            if (success) {
+                // Image captured successfully, URI is already set
+            }
+        }
+    )
 
     // DATE PICKER
     TanggalPicker(
@@ -37,6 +66,37 @@ fun TambahPengeluaranScreen(
         saatTutup = { bukaTanggalPicker = false },
         saatDipilih = { tanggal = it }
     )
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Pilih Sumber Gambar") },
+            text = { Text("Pilih dari galeri atau ambil foto baru.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDialog = false
+                        galleryLauncher.launch("image/*")
+                    }
+                ) {
+                    Text("Galeri")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        showDialog = false
+                        val file = File(context.cacheDir, "camera_photo.jpg")
+                        val uri = FileProvider.getUriForFile(context, "com.example.tugasbesarptb_colife.provider", file)
+                        imageUri = uri
+                        cameraLauncher.launch(uri)
+                    }
+                ) {
+                    Text("Kamera")
+                }
+            }
+        )
+    }
 
     Scaffold { padding ->
         Column(
@@ -53,6 +113,18 @@ fun TambahPengeluaranScreen(
             )
 
             Spacer(Modifier.height(24.dp))
+            
+            if (imageUri != null) {
+                Box(modifier = Modifier.height(200.dp).fillMaxWidth()) {
+                    AsyncImage(
+                        model = imageUri,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                Spacer(Modifier.height(16.dp))
+            }
 
             Text("Nama Pengeluaran")
             OutlinedTextField(
@@ -109,7 +181,7 @@ fun TambahPengeluaranScreen(
             ) {
 
                 Button(
-                    onClick = {},
+                    onClick = { showDialog = true },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFB2DFDB)
@@ -123,7 +195,13 @@ fun TambahPengeluaranScreen(
                 Button(
                     onClick = {
                         onAddPengeluaran(
-                            Pengeluaran(nama = nama, tanggal = tanggal, jumlah = jumlah, kategori = kategori)
+                            Pengeluaran(
+                                nama = nama, 
+                                tanggal = tanggal, 
+                                jumlah = jumlah, 
+                                kategori = kategori,
+                                fotoUri = imageUri?.toString()
+                            )
                         )
                     },
                     modifier = Modifier.weight(1f),

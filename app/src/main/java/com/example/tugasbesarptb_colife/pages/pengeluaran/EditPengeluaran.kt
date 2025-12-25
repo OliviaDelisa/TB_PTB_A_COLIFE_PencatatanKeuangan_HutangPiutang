@@ -6,6 +6,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,6 +17,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.tugasbesarptb_colife.components.TanggalPicker
 import com.example.tugasbesarptb_colife.data.local.entity.Pengeluaran
 import com.example.tugasbesarptb_colife.pages.pengeluaran.viewmodel.PengeluaranViewModel
 import com.example.tugasbesarptb_colife.ui.theme.hijau30
@@ -50,6 +52,7 @@ private fun EditPengeluaranContent(
     var tanggalState by remember { mutableStateOf(pengeluaran.tanggal) }
     var jumlahState by remember { mutableStateOf(pengeluaran.jumlah) }
     var kategoriState by remember { mutableStateOf(pengeluaran.kategori) }
+    var bukaTanggalPicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(pengeluaran) {
         namaState = pengeluaran.nama
@@ -57,6 +60,12 @@ private fun EditPengeluaranContent(
         jumlahState = pengeluaran.jumlah
         kategoriState = pengeluaran.kategori
     }
+
+    TanggalPicker(
+        buka = bukaTanggalPicker,
+        saatTutup = { bukaTanggalPicker = false },
+        saatDipilih = { tanggalState = it }
+    )
 
     Scaffold(
         topBar = {
@@ -93,8 +102,13 @@ private fun EditPengeluaranContent(
             Text("Tanggal", fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
             OutlinedTextField(
                 value = tanggalState,
-                onValueChange = { tanggalState = it },
-                trailingIcon = { Icon(Icons.Default.CalendarToday, "Pilih Tanggal") },
+                onValueChange = {},
+                readOnly = true,
+                trailingIcon = {
+                    IconButton(onClick = { bukaTanggalPicker = true }) {
+                        Icon(Icons.Default.DateRange, "Pilih Tanggal")
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = hijau30, unfocusedBorderColor = hijau30)

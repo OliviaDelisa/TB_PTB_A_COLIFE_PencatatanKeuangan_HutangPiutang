@@ -10,5 +10,6 @@ data class Pengeluaran(
     val nama: String,
     val tanggal: String,
     val jumlah: String,
-    val kategori: String
+    val kategori: String,
+    val fotoUri: String? = null
 )
