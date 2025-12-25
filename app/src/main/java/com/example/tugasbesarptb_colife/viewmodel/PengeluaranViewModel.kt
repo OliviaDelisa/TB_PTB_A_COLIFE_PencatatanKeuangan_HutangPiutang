@@ -1,6 +1,7 @@
 package com.example.tugasbesarptb_colife.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
@@ -23,6 +24,7 @@ class PengeluaranViewModel(application: Application) : AndroidViewModel(applicat
 
     fun insert(pengeluaran: Pengeluaran) = viewModelScope.launch {
         repository.insert(pengeluaran)
+        sendPengeluaranToServer(pengeluaran)
     }
 
     fun update(pengeluaran: Pengeluaran) = viewModelScope.launch {
@@ -35,5 +37,18 @@ class PengeluaranViewModel(application: Application) : AndroidViewModel(applicat
 
     fun getPengeluaranById(id: Int): LiveData<Pengeluaran> {
         return repository.getPengeluaranById(id)
+    }
+
+    private fun sendPengeluaranToServer(pengeluaran: Pengeluaran) = viewModelScope.launch {
+        try {
+            val response = repository.sendPengeluaranToServer(pengeluaran)
+            if (response.isSuccessful) {
+                Log.d("PengeluaranViewModel", "Data sent successfully: ${response.body()}")
+            } else {
+                Log.e("PengeluaranViewModel", "Failed to send data: ${response.errorBody()?.string()}")
+            }
+        } catch (e: Exception) {
+            Log.e("PengeluaranViewModel", "Exception when sending data", e)
+        }
     }
 }

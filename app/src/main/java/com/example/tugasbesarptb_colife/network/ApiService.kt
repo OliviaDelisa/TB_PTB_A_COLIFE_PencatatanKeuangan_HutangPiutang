@@ -1,5 +1,6 @@
 package com.example.tugasbesarptb_colife.network
 
+import com.example.tugasbesarptb_colife.data.local.entity.Pengeluaran
 import com.example.tugasbesarptb_colife.model.ServerResponse
 import com.example.tugasbesarptb_colife.model.UserLoginRequest
 import com.example.tugasbesarptb_colife.model.UserRegisterRequest
@@ -20,7 +21,9 @@ interface ApiService {
         @Body request: UserLoginRequest
     ): Response<ServerResponse>
 
+    @POST("api/pengeluaran")
+    suspend fun postPengeluaran(
+        @Body pengeluaran: Pengeluaran
+    ): Response<ServerResponse>
+
 }
-
-
-
