@@ -12,7 +12,7 @@ fun TanggalPicker(
     saatTutup: () -> Unit,
     saatDipilih: (String) -> Unit
 ) {
-    val status = rememberDatePickerState()
+    val status = rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis())
 
     if (buka) {
         DatePickerDialog(

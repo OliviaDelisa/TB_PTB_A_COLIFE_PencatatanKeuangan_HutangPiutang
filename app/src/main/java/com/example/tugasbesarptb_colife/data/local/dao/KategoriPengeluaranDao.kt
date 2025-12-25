@@ -14,4 +14,7 @@ interface KategoriPengeluaranDao {
 
     @Query("SELECT * FROM kategori_pengeluaran_table ORDER BY id DESC")
     fun getAllKategori(): LiveData<List<KategoriPengeluaran>>
+
+    @Query("SELECT COUNT(*) FROM kategori_pengeluaran_table")
+    suspend fun getKategoriCount(): Int
 }

@@ -127,10 +127,11 @@ fun DaftarPengeluaranScreen(navController: NavController) {
 
 @Composable
 fun PengeluaranCard(pengeluaran: PengeluaranWithKategori, onDelete: () -> Unit, onEdit: () -> Unit) {
+    val cardColor = pengeluaran.warnaKategori?.let { Color(it) } ?: Color.LightGray
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(pengeluaran.warnaKategori).copy(alpha = 0.3f))
+        colors = CardDefaults.cardColors(containerColor = cardColor.copy(alpha = 0.3f))
     ) {
         Row(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),
@@ -140,7 +141,7 @@ fun PengeluaranCard(pengeluaran: PengeluaranWithKategori, onDelete: () -> Unit, 
             Column(modifier = Modifier.weight(1f)) {
                 Text(pengeluaran.nama, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.Black)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(pengeluaran.namaKategori, fontSize = 12.sp, color = Color.Gray)
+                Text(pengeluaran.namaKategori ?: "Tidak Ada Kategori", fontSize = 12.sp, color = Color.Gray)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(formatRupiah(pengeluaran.jumlah), fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = Color.Black)
             }

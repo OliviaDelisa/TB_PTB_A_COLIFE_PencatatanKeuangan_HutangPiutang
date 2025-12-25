@@ -16,8 +16,8 @@ data class PengeluaranWithKategori(
     val jumlah: Long,
     val tanggal: String,
     val kategoriId: Int,
-    val namaKategori: String,
-    val warnaKategori: Int
+    val namaKategori: String?,
+    val warnaKategori: Int?
 )
 
 @Dao
@@ -45,7 +45,7 @@ interface PengeluaranDao {
             k.nama AS namaKategori, 
             k.warna AS warnaKategori
         FROM pengeluaran_table AS p
-        INNER JOIN kategori_pengeluaran_table AS k ON p.kategoriId = k.id
+        LEFT JOIN kategori_pengeluaran_table AS k ON p.kategoriId = k.id
         ORDER BY p.id DESC
     """)
     fun getAllPengeluaranWithKategori(): LiveData<List<PengeluaranWithKategori>>

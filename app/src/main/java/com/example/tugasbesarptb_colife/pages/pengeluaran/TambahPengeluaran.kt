@@ -43,6 +43,12 @@ fun TambahPengeluaranScreen(navController: NavController) {
     var selectedKategori by remember { mutableStateOf<KategoriPengeluaran?>(null) }
     var isKategoriExpanded by remember { mutableStateOf(false) }
 
+    val isFormValid by remember(nama, jumlah, tanggal, selectedKategori) {
+        derivedStateOf {
+            nama.isNotBlank() && (jumlah.toLongOrNull() ?: 0L) > 0 && tanggal.isNotBlank() && selectedKategori != null
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -70,7 +76,7 @@ fun TambahPengeluaranScreen(navController: NavController) {
                 onExpandedChange = { isKategoriExpanded = !isKategoriExpanded }
             ) {
                 OutlinedTextField(
-                    value = selectedKategori?.nama ?: "",
+                    value = selectedKategori?.nama ?: "Pilih Kategori",
                     onValueChange = {}, // read-only
                     readOnly = true,
                     label = { Text("Kategori") },
@@ -100,20 +106,19 @@ fun TambahPengeluaranScreen(navController: NavController) {
             Button(
                 onClick = {
                     val jumlahLong = jumlah.toLongOrNull() ?: 0L
-                    if (nama.isNotBlank() && jumlahLong > 0 && tanggal.isNotBlank() && selectedKategori != null) {
-                        val pengeluaran = Pengeluaran(
-                            nama = nama,
-                            jumlah = jumlahLong,
-                            tanggal = tanggal,
-                            kategoriId = selectedKategori!!.id
-                        )
-                        pengeluaranViewModel.insert(pengeluaran)
-                        navController.popBackStack()
-                    }
+                    val pengeluaran = Pengeluaran(
+                        nama = nama,
+                        jumlah = jumlahLong,
+                        tanggal = tanggal,
+                        kategoriId = selectedKategori!!.id
+                    )
+                    pengeluaranViewModel.insert(pengeluaran)
+                    navController.popBackStack()
                 },
+                enabled = isFormValid,
                 modifier = Modifier.fillMaxWidth().height(50.dp),
                 shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = hijau30)
+                colors = ButtonDefaults.buttonColors(containerColor = hijau30, disabledContainerColor = Color.Gray)
             ) {
                 Text("Simpan", color = Color.White, fontSize = 16.sp)
             }

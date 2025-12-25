@@ -8,6 +8,6 @@ data class KategoriPengeluaran(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val nama: String,
-    val target: Long,
+    val target: Long = 0L,
     val warna: Int // Menyimpan warna sebagai Int (ARGB)
 )

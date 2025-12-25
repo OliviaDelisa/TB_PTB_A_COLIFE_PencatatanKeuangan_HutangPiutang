@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.tugasbesarptb_colife.data.local.dao.KategoriPengeluaranDao
 import com.example.tugasbesarptb_colife.data.local.dao.PemasukanDao
 import com.example.tugasbesarptb_colife.data.local.dao.PengeluaranDao
@@ -13,10 +14,14 @@ import com.example.tugasbesarptb_colife.data.local.entity.KategoriPengeluaran
 import com.example.tugasbesarptb_colife.data.local.entity.Pemasukan
 import com.example.tugasbesarptb_colife.data.local.entity.Pengeluaran
 import com.example.tugasbesarptb_colife.data.local.entity.Piutang
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.util.concurrent.Executors
 
 @Database(
     entities = [Piutang::class, Pemasukan::class, KategoriPengeluaran::class, Pengeluaran::class],
-    version = 4, // Naikkan versi
+    version = 4, // Kembali ke versi 4
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -37,7 +42,28 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "colife_database"
                 )
-                    .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigration() // Tambahkan ini kembali
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                    .addCallback(object : Callback(){
+                        override fun onOpen(db: SupportSQLiteDatabase) {
+                            super.onOpen(db)
+                            //pre-populate data
+                            Executors.newSingleThreadExecutor().execute {
+                                INSTANCE?.let {
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        val kategoriDao = it.kategoriPengeluaranDao()
+                                        if (kategoriDao.getKategoriCount() == 0) {
+                                            kategoriDao.insertKategori(KategoriPengeluaran(nama = "Makanan", target = 0L, warna = 0xFFF44336.toInt()))
+                                            kategoriDao.insertKategori(KategoriPengeluaran(nama = "Transportasi", target = 0L, warna = 0xFFFF9800.toInt()))
+                                            kategoriDao.insertKategori(KategoriPengeluaran(nama = "Belanja", target = 0L, warna = 0xFF2196F3.toInt()))
+                                            kategoriDao.insertKategori(KategoriPengeluaran(nama = "Hiburan", target = 0L, warna = 0xFF4CAF50.toInt()))
+                                            kategoriDao.insertKategori(KategoriPengeluaran(nama = "Kesehatan", target = 0L, warna = 0xFF9C27B0.toInt()))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    })
                     .build()
                 INSTANCE = instance
                 instance

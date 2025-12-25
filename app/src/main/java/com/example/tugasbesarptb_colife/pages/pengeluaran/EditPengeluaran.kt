@@ -42,14 +42,16 @@ fun EditPengeluaranScreen(navController: NavController) {
     val pengeluaranToEdit by pengeluaranViewModel.getPengeluaranById(pengeluaranId).observeAsState()
     val allKategori by kategoriViewModel.allKategori.observeAsState(initial = emptyList())
 
-    if (pengeluaranToEdit == null || allKategori.isEmpty()) {
+    val content = pengeluaranToEdit
+
+    if (content == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         }
     } else {
         EditPengeluaranContent(
             navController = navController,
-            pengeluaran = pengeluaranToEdit!!,
+            pengeluaran = content,
             listKategori = allKategori,
             viewModel = pengeluaranViewModel
         )
@@ -71,11 +73,13 @@ private fun EditPengeluaranContent(
     var selectedKategori by remember { mutableStateOf(listKategori.find { it.id == pengeluaran.kategoriId }) }
     var showDatePicker by remember { mutableStateOf(false) }
 
-    LaunchedEffect(pengeluaran) {
+    LaunchedEffect(pengeluaran, listKategori) {
         nama = pengeluaran.nama
         jumlah = pengeluaran.jumlah.toString()
         tanggal = pengeluaran.tanggal
-        selectedKategori = listKategori.find { it.id == pengeluaran.kategoriId }
+        if (listKategori.isNotEmpty()){
+            selectedKategori = listKategori.find { it.id == pengeluaran.kategoriId }
+        }
     }
 
     Scaffold(
@@ -100,7 +104,7 @@ private fun EditPengeluaranContent(
                 onExpandedChange = { isKategoriExpanded = !isKategoriExpanded }
             ) {
                 OutlinedTextField(
-                    value = selectedKategori?.nama ?: "",
+                    value = selectedKategori?.nama ?: "Pilih Kategori",
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Kategori") },
@@ -130,8 +134,7 @@ private fun EditPengeluaranContent(
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Button(
                     onClick = {
-                        val pengeluaranToDelete = pengeluaran.copy(nama = nama, jumlah = jumlah.toLongOrNull() ?: 0, tanggal = tanggal, kategoriId = selectedKategori?.id ?: 0)
-                        viewModel.delete(pengeluaranToDelete)
+                        viewModel.delete(pengeluaran)
                         navController.popBackStack()
                     },
                     modifier = Modifier.weight(1f).height(50.dp),
@@ -142,17 +145,15 @@ private fun EditPengeluaranContent(
                 }
                 Button(
                     onClick = {
-                        val updatedJumlah = jumlah.toLongOrNull() ?: 0L
-                        if (selectedKategori != null) {
-                            val updatedPengeluaran = pengeluaran.copy(
-                                nama = nama,
-                                jumlah = updatedJumlah,
-                                tanggal = tanggal,
-                                kategoriId = selectedKategori!!.id
-                            )
-                            viewModel.update(updatedPengeluaran)
-                            navController.popBackStack()
-                        }
+                        val updatedJumlah = jumlah.toLongOrNull() ?: pengeluaran.jumlah
+                        val updatedPengeluaran = pengeluaran.copy(
+                            nama = nama,
+                            jumlah = updatedJumlah,
+                            tanggal = tanggal,
+                            kategoriId = selectedKategori?.id ?: pengeluaran.kategoriId
+                        )
+                        viewModel.update(updatedPengeluaran)
+                        navController.popBackStack()
                     },
                     modifier = Modifier.weight(1f).height(50.dp),
                     shape = RoundedCornerShape(16.dp),
