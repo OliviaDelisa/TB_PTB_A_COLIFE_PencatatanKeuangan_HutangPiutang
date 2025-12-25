@@ -5,10 +5,11 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
@@ -109,7 +110,8 @@ fun TambahPengeluaranScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 24.dp, vertical = 16.dp),
+                .padding(horizontal = 24.dp, vertical = 16.dp)
+                .verticalScroll(rememberScrollState()), // Make the column scrollable
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             FormInput(label = "Nama Pengeluaran", value = nama, onValueChange = { nama = it })
@@ -184,13 +186,13 @@ fun TambahPengeluaranScreen(navController: NavController) {
             imageUri?.let {
                 Box(modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
+                    .height(300.dp) // Increase height to show more of the image
                     .padding(top = 16.dp)) {
                     Image(
                         painter = rememberAsyncImagePainter(it),
                         contentDescription = "Gambar Pengeluaran",
                         modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
+                        contentScale = ContentScale.Fit // Change to Fit
                     )
                 }
             }

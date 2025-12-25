@@ -10,5 +10,5 @@ data class Pemasukan(
     val sumber: String,
     val tanggal: String,
     val jumlah: String,
-    val imageUri: String? = null // Kolom baru untuk path gambar
+    val fotoUri: String? = null // Kolom diubah menjadi fotoUri
 )
