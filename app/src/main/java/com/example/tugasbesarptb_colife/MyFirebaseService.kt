@@ -29,10 +29,9 @@ class MyFirebaseService : FirebaseMessagingService() {
         val title = msg.notification?.title ?: msg.data["title"] ?: "Pengingat"
         val body = msg.notification?.body ?: msg.data["body"] ?: "Ada tagihan jatuh tempo"
 
-        // Ambil piutangId dari payload (jika ada)
+        
         val piutangId = msg.data["piutangId"] ?: ""
 
-        // Intent klik notifikasi buka detail piutang
         val intent = Intent(this, MainActivity::class.java).apply {
             putExtra("open", if (piutangId.isNotEmpty()) "piutang_detail" else "notification")
             putExtra("piutangId", piutangId)
