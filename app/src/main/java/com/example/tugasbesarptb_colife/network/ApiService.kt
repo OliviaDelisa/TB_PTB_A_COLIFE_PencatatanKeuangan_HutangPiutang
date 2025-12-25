@@ -1,11 +1,13 @@
 package com.example.tugasbesarptb_colife.network
 
+import com.example.tugasbesarptb_colife.model.GambarResponse // <--- Import Baru (Wajib ada)
 import com.example.tugasbesarptb_colife.model.HutangRequest
 import com.example.tugasbesarptb_colife.model.HutangListResponse
 import com.example.tugasbesarptb_colife.model.ServerResponse
 import com.example.tugasbesarptb_colife.model.UserLoginRequest
 import com.example.tugasbesarptb_colife.model.UserRegisterRequest
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -24,7 +26,7 @@ interface ApiService {
     ): Response<ServerResponse>
 
 
-    // ================= HUTANG =================
+    // ================= HUTANG (CRUD DATA) =================
 
     @POST("api/hutang/add")
     suspend fun tambahHutang(
@@ -48,15 +50,33 @@ interface ApiService {
     @GET("api/hutang/history")
     suspend fun getHistoryHutang(): Response<HutangListResponse>
 
-    @Multipart
-    @POST("api/hutang/upload/{id}")
-    suspend fun uploadStruk(
-        @Path("id") id: Int,
-        @Part image: MultipartBody.Part
-    ): Response<ServerResponse>
-
     @POST("api/hutang/selesai/{id}")
     suspend fun selesaiHutang(
         @Path("id") id: Int
+    ): Response<ServerResponse>
+
+
+    // ================= GAMBAR BUKTI (BARU & LENGKAP) =================
+
+    // 1. UPLOAD (Auto Save)
+    @Multipart
+    @POST("api/hutang/upload-bukti")
+    suspend fun uploadBuktiPermanen(
+        @Part("hutang_id") hutangId: RequestBody,
+        @Part image: MultipartBody.Part
+    ): Response<ServerResponse>
+
+    // 2. AMBIL LIST GAMBAR (Auto Load)
+    // Mengambil semua gambar berdasarkan ID Hutang
+    @GET("api/hutang/gambar/{id}")
+    suspend fun getGambarHutang(
+        @Path("id") id: String
+    ): Response<GambarResponse>
+
+    // 3. HAPUS GAMBAR SATUAN
+    // Menghapus satu foto bukti saja
+    @DELETE("api/hutang/gambar/delete/{id}")
+    suspend fun deleteGambarBukti(
+        @Path("id") id: Int // Ini ID Gambar, bukan ID Hutang
     ): Response<ServerResponse>
 }
