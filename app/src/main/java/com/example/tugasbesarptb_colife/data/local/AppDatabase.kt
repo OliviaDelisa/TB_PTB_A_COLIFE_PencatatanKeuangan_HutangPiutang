@@ -21,7 +21,7 @@ import java.util.concurrent.Executors
 
 @Database(
     entities = [Piutang::class, Pemasukan::class, KategoriPengeluaran::class, Pengeluaran::class],
-    version = 4, // Kembali ke versi 4
+    version = 5, // Naikkan versi ke 5
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -42,8 +42,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "colife_database"
                 )
-                    .fallbackToDestructiveMigration() // Tambahkan ini kembali
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                    .fallbackToDestructiveMigration()
                     .addCallback(object : Callback(){
                         override fun onOpen(db: SupportSQLiteDatabase) {
                             super.onOpen(db)

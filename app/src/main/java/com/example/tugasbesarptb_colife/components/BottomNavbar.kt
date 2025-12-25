@@ -32,7 +32,15 @@ fun BottomNavBar(navController: NavController, currentRoute: String?) {
             icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
             label = { NavLabel("Home") },
             selected = currentRoute == "home",
-            onClick = { navController.navigate("home") },
+            onClick = {
+                navController.navigate("home") {
+                    popUpTo(navController.graph.startDestinationId) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = hijau30,
                 selectedTextColor = hijau30,
@@ -45,8 +53,16 @@ fun BottomNavBar(navController: NavController, currentRoute: String?) {
         NavigationBarItem(
             icon = { Icon(Icons.Default.AccountBalanceWallet, contentDescription = "Pemasukan") },
             label = { NavLabel("Pemasukan") },
-            selected = currentRoute == "pemasukan",
-            onClick = { navController.navigate("daftarpemasukan") },
+            selected = currentRoute == "daftarpemasukan",
+            onClick = {
+                navController.navigate("daftarpemasukan") {
+                    popUpTo(navController.graph.startDestinationId) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = hijau30,
                 selectedTextColor = hijau30,
@@ -83,7 +99,15 @@ fun BottomNavBar(navController: NavController, currentRoute: String?) {
             icon = { Icon(Icons.Default.ReceiptLong, contentDescription = "Hutang") },
             label = { NavLabel("Hutang") },
             selected = currentRoute == "hutang",
-            onClick = { navController.navigate("hutang") },
+            onClick = {
+                navController.navigate("hutang") {
+                    popUpTo(navController.graph.startDestinationId) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = hijau30,
                 selectedTextColor = hijau30,
@@ -96,8 +120,16 @@ fun BottomNavBar(navController: NavController, currentRoute: String?) {
         NavigationBarItem(
             icon = { Icon(Icons.Default.Person, contentDescription = "Profil") },
             label = { NavLabel("Profil") },
-            selected = currentRoute == "profil",
-            onClick = { navController.navigate("profilscreen") },
+            selected = currentRoute == "profilscreen",
+            onClick = {
+                navController.navigate("profilscreen") {
+                    popUpTo(navController.graph.startDestinationId) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = hijau30,
                 selectedTextColor = hijau30,

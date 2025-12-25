@@ -2,10 +2,12 @@ package com.example.tugasbesarptb_colife.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "pengeluaran_table",
+    indices = [Index(value = ["kategoriId"])],
     foreignKeys = [ForeignKey(
         entity = KategoriPengeluaran::class,
         parentColumns = ["id"],
