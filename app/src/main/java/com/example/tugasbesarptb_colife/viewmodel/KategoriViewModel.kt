@@ -5,8 +5,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
 import com.example.tugasbesarptb_colife.data.local.AppDatabase
-import com.example.tugasbesarptb_colife.data.local.entity.KategoriPengeluaran
 import com.example.tugasbesarptb_colife.data.repository.KategoriRepository
+import com.example.tugasbesarptb_colife.data.local.entity.KategoriPengeluaran
+import com.example.tugasbesarptb_colife.network.ApiClient
 import kotlinx.coroutines.launch
 
 class KategoriViewModel(application: Application) : AndroidViewModel(application) {
@@ -15,12 +16,20 @@ class KategoriViewModel(application: Application) : AndroidViewModel(application
     val allKategori: LiveData<List<KategoriPengeluaran>>
 
     init {
-        val kategoriDao = AppDatabase.getInstance(application).kategoriPengeluaranDao()
-        repository = KategoriRepository(kategoriDao)
+        val db = AppDatabase.getInstance(application)
+        repository = KategoriRepository(
+            db.kategoriPengeluaranDao(),
+            ApiClient.instance
+        )
         allKategori = repository.allKategori
     }
 
-    fun insert(kategori: KategoriPengeluaran) = viewModelScope.launch {
-        repository.insert(kategori)
+    // Ubah fungsi insert untuk menerima userId
+    fun insert(kategori: KategoriPengeluaran, userId: Int) = viewModelScope.launch {
+        repository.insert(kategori, userId)
+    }
+
+    fun sync(userId: Int) = viewModelScope.launch {
+        repository.syncKategori(userId)
     }
 }

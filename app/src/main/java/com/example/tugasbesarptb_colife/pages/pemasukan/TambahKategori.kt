@@ -29,29 +29,27 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.tugasbesarptb_colife.components.BottomNavBar
-import com.example.tugasbesarptb_colife.model.KategoriRequest
-import com.example.tugasbesarptb_colife.network.ApiClient
+import com.example.tugasbesarptb_colife.data.local.entity.KategoriPengeluaran
 import com.example.tugasbesarptb_colife.ui.theme.TugasBesarPTB_COLIFETheme
 import com.example.tugasbesarptb_colife.ui.theme.hijau30
-import kotlinx.coroutines.launch
+import com.example.tugasbesarptb_colife.viewmodel.KategoriViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TambahKategoriPengeluaranScreen(navController: NavController) {
 
     val context = LocalContext.current
-
-    // 1. Tambahkan Scope untuk menjalankan API
-    val scope = rememberCoroutineScope()
+    val kategoriViewModel: KategoriViewModel = viewModel()
 
     var kategori by remember { mutableStateOf("") }
     var targetPengeluaran by remember { mutableStateOf("") }
     var showColorPicker by remember { mutableStateOf(false) }
     var selectedColor by remember { mutableStateOf<Color?>(null) }
-    var isLoading by remember { mutableStateOf(false) } // Loading state
+    var isLoading by remember { mutableStateOf(false) }
 
     val currentRoute = navController.currentBackStackEntry?.destination?.route
 
@@ -116,7 +114,6 @@ fun TambahKategoriPengeluaranScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // TOMBOL SIMPAN KE SERVER
             Button(
                 onClick = {
                     val target = targetPengeluaran.toLongOrNull()
@@ -133,38 +130,22 @@ fun TambahKategoriPengeluaranScreen(navController: NavController) {
                             Toast.makeText(context, "Silakan pilih warna untuk kategori", Toast.LENGTH_SHORT).show()
                         }
                         else -> {
-                            // --- MULAI KIRIM KE SERVER ---
                             isLoading = true
-                            scope.launch {
-                                try {
-                                    val request = KategoriRequest(
-                                        nama = namaKategoriTrim,
-                                        target = target,
-                                        warna = selectedColor!!.toArgb() // Kirim warna sebagai Int
-                                    )
-
-                                    Log.d("API_KATEGORI", "Mengirim: $request")
-                                    val response = ApiClient.instance.addKategori(request)
-
-                                    if (response.isSuccessful) {
-                                        Toast.makeText(context, "Kategori berhasil disimpan ke Server", Toast.LENGTH_SHORT).show()
-                                        navController.popBackStack()
-                                    } else {
-                                        Log.e("API_KATEGORI", "Gagal: ${response.code()} - ${response.message()}")
-                                        Toast.makeText(context, "Gagal menyimpan: ${response.message()}", Toast.LENGTH_SHORT).show()
-                                    }
-                                } catch (e: Exception) {
-                                    Log.e("API_KATEGORI", "Error: ${e.message}")
-                                    Toast.makeText(context, "Error koneksi: ${e.message}", Toast.LENGTH_SHORT).show()
-                                } finally {
-                                    isLoading = false
-                                }
-                            }
-                            // -----------------------------
+                            // TODO: Replace with actual user ID from shared preferences or other local storage
+                            val userId = 1
+                            val newKategori = KategoriPengeluaran(
+                                nama = namaKategoriTrim,
+                                target = target,
+                                warna = selectedColor!!.toArgb()
+                            )
+                            kategoriViewModel.insert(newKategori, userId)
+                            isLoading = false
+                            Toast.makeText(context, "Kategori berhasil disimpan", Toast.LENGTH_SHORT).show()
+                            navController.popBackStack()
                         }
                     }
                 },
-                enabled = !isLoading, // Disable tombol saat loading
+                enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5E8378)),
                 shape = RoundedCornerShape(30.dp),
                 modifier = Modifier.align(Alignment.End).height(48.dp).width(130.dp)
