@@ -19,26 +19,25 @@ class PiutangViewModel(private val repository: PiutangRepository) : ViewModel() 
     private val _selectedPiutang = MutableLiveData<Piutang?>()
     val selectedPiutang: LiveData<Piutang?> get() = _selectedPiutang
 
-    // ===== Selection =====
+    
     fun selectPiutang(piutang: Piutang) { _selectedPiutang.value = piutang }
     fun clearSelection() { _selectedPiutang.value = null }
 
-    // ===== Insert =====
+  
     fun insertPiutang(piutang: Piutang) = viewModelScope.launch {
         repository.insert(piutang)
     }
 
-    // ===== Update =====
+
     fun updatePiutang(piutang: Piutang) = viewModelScope.launch {
         repository.update(piutang)
     }
 
-    // ===== Delete =====
+
     fun deletePiutang(piutang: Piutang) = viewModelScope.launch {
         repository.delete(piutang)
     }
 
-    // ===== Tandai Selesai =====
     fun markPiutangSelesai(piutang: Piutang) = viewModelScope.launch {
         val updated = piutang.copy(
             selesai = true,
@@ -47,7 +46,6 @@ class PiutangViewModel(private val repository: PiutangRepository) : ViewModel() 
         repository.update(updated)
     }
 
-    // ===== Upload Bukti =====
     fun uploadBukti(piutang: Piutang, uri: Uri, context: Context) = viewModelScope.launch {
         repository.uploadBukti(piutang, uri, context)
     }
@@ -57,7 +55,7 @@ class PiutangViewModel(private val repository: PiutangRepository) : ViewModel() 
     }
 
 
-    // ===== Helper tanggal =====
+   
     private fun getTodayDate(): String {
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         return sdf.format(Date())
