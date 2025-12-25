@@ -35,7 +35,9 @@ import com.example.tugasbesarptb_colife.components.BottomNavBar
 import com.example.tugasbesarptb_colife.data.local.entity.Pemasukan
 import com.example.tugasbesarptb_colife.ui.theme.TugasBesarPTB_COLIFETheme
 import com.example.tugasbesarptb_colife.ui.theme.hijau30
+import com.example.tugasbesarptb_colife.util.formatRupiah // Import fungsi terpusat
 import com.example.tugasbesarptb_colife.viewmodel.PemasukanViewModel
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -163,7 +165,12 @@ fun PemasukanItem(
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = pemasukan.sumber, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Rp ${pemasukan.jumlah}", color = Color.Black, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                Text(
+                    text = formatRupiah(pemasukan.jumlah.toLongOrNull() ?: 0L),
+                    color = Color.Black, 
+                    fontWeight = FontWeight.SemiBold, 
+                    fontSize = 16.sp
+                )
             }
             Text(text = pemasukan.tanggal, color = Color.Gray, fontSize = 14.sp)
             Spacer(modifier = Modifier.width(8.dp))

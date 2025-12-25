@@ -6,51 +6,47 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.tugasbesarptb_colife.pages.BuktiPembayaranScreen
-import com.example.tugasbesarptb_colife.pages.LandingPage
-import com.example.tugasbesarptb_colife.pages.Login
-import com.example.tugasbesarptb_colife.pages.Daftar
-import com.example.tugasbesarptb_colife.pages.DaftarPiutang
-import com.example.tugasbesarptb_colife.pages.EditHutangScreen
-import com.example.tugasbesarptb_colife.pages.EditPiutangScreen
-import com.example.tugasbesarptb_colife.pages.HistoryHutangScreen
-import com.example.tugasbesarptb_colife.pages.Home
-import com.example.tugasbesarptb_colife.pages.HutangScreen
-import com.example.tugasbesarptb_colife.pages.HutangUtama
-import com.example.tugasbesarptb_colife.pages.ProfilScreen
-import com.example.tugasbesarptb_colife.pages.StrukHutangScreen
-import com.example.tugasbesarptb_colife.pages.TambahHutangScreen
-import com.example.tugasbesarptb_colife.pages.TambahPiutang
-import com.example.tugasbesarptb_colife.pages.pemasukan.DaftarPemasukanScreen
-import com.example.tugasbesarptb_colife.pages.pemasukan.TambahPemasukanScreen
-import com.example.tugasbesarptb_colife.pages.pemasukan.TambahKategoriPengeluaranScreen
-import com.example.tugasbesarptb_colife.pages.pemasukan.EditPemasukanScreen
-import com.example.tugasbesarptb_colife.pages.pemasukan.SummaryPengeluaranScreen
+import com.example.tugasbesarptb_colife.pages.* // Import all pages
+import com.example.tugasbesarptb_colife.pages.pemasukan.*
+import com.example.tugasbesarptb_colife.pages.pengeluaran.*
 
 @RequiresApi(Build.VERSION_CODES.O)
 
 @Composable
 fun NavGraph(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "landing") {
+        // Landing & Auth
         composable("landing") { LandingPage(navController) }
         composable("login") { Login(navController) }
         composable("signup") { Daftar(navController) }
+        
+        // Main
         composable("home") { Home(navController) }
+        composable("profilscreen") { ProfilScreen(navController) }
+
+        // Hutang & Piutang
         composable("hutang") { HutangUtama(navController) }
-        composable("detailPiutang") {DaftarPiutang(navController) }
-        composable("tambahPiutang") {TambahPiutang(navController) }
-        composable("uploadBuktiPembayaran") {BuktiPembayaranScreen(navController) }
-        composable("editPiutang") { EditPiutangScreen(navController) }
         composable("listhutang") { HutangScreen(navController) }
-        composable("historyhutang") { HistoryHutangScreen(navController) }
-        composable("strukhutang") { StrukHutangScreen(navController) }
         composable("tambahhutang") { TambahHutangScreen(navController) }
         composable("edithutang") { EditHutangScreen(navController) }
-        composable("profilscreen") { ProfilScreen(navController) }
+        composable("historyhutang") { HistoryHutangScreen(navController) }
+        composable("strukhutang") { StrukHutangScreen(navController) }
+        composable("detailPiutang") { DaftarPiutang(navController) }
+        composable("tambahPiutang") { TambahPiutang(navController) }
+        composable("editPiutang") { EditPiutangScreen(navController) }
+        composable("uploadBuktiPembayaran") { BuktiPembayaranScreen(navController) }
+
+        // Pemasukan
         composable("daftarpemasukan") { DaftarPemasukanScreen(navController) }
         composable("tambahpemasukan") { TambahPemasukanScreen(navController) }
+        composable("editpemasukan") { EditPemasukanScreen(navController) }
         composable("tambahkategori") { TambahKategoriPengeluaranScreen(navController) }
-        composable("editpemasukan") { EditPemasukanScreen(navController) } // Disederhanakan
         composable("summarypengeluaran") { SummaryPengeluaranScreen(navController) }
+
+        // Pengeluaran & Kategori
+        composable("daftarpengeluaran") { DaftarPengeluaranScreen(navController) } // BARU
+        composable("tambahpengeluaran") { TambahPengeluaranScreen(navController) } // BARU
+        composable("editpengeluaran") { EditPengeluaranScreen(navController) }     // BARU
+
     }
 }

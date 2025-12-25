@@ -45,7 +45,7 @@ fun BottomNavBar(navController: NavController, currentRoute: String?) {
         NavigationBarItem(
             icon = { Icon(Icons.Default.AccountBalanceWallet, contentDescription = "Pemasukan") },
             label = { NavLabel("Pemasukan") },
-            selected = currentRoute == "pemasukan",
+            selected = currentRoute == "daftarpemasukan",
             onClick = { navController.navigate("daftarpemasukan") },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = hijau30,
@@ -59,8 +59,8 @@ fun BottomNavBar(navController: NavController, currentRoute: String?) {
         NavigationBarItem(
             icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Pengeluaran") },
             label = { NavLabel("Pengeluaran") },
-            selected = currentRoute == "pengeluaran",
-            onClick = { navController.navigate("pengeluaran") },
+            selected = currentRoute == "daftarpengeluaran" || currentRoute == "summarypengeluaran",
+            onClick = { navController.navigate("daftarpengeluaran") },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = hijau30,
                 selectedTextColor = hijau30,
@@ -87,7 +87,7 @@ fun BottomNavBar(navController: NavController, currentRoute: String?) {
         NavigationBarItem(
             icon = { Icon(Icons.Default.Person, contentDescription = "Profil") },
             label = { NavLabel("Profil") },
-            selected = currentRoute == "profil",
+            selected = currentRoute == "profilscreen",
             onClick = { navController.navigate("profilscreen") },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = hijau30,

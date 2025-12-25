@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
-import com.example.tugasbesarptb_colife.data.PemasukanDatabase
+import com.example.tugasbesarptb_colife.data.local.AppDatabase
 import com.example.tugasbesarptb_colife.data.repository.PemasukanRepository
 import com.example.tugasbesarptb_colife.data.local.entity.Pemasukan
 import kotlinx.coroutines.launch
@@ -15,7 +15,7 @@ class PemasukanViewModel(application: Application) : AndroidViewModel(applicatio
     val allPemasukan: LiveData<List<Pemasukan>>
 
     init {
-        val pemasukanDao = PemasukanDatabase.getDatabase(application).pemasukanDao()
+        val pemasukanDao = AppDatabase.getInstance(application).pemasukanDao()
         repository = PemasukanRepository(pemasukanDao)
         allPemasukan = repository.allPemasukan
     }

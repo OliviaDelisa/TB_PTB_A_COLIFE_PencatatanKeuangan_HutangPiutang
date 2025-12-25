@@ -1,5 +1,6 @@
 package com.example.tugasbesarptb_colife.pages.pemasukan
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,10 +26,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -37,15 +41,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.tugasbesarptb_colife.components.BottomNavBar
+import com.example.tugasbesarptb_colife.data.local.entity.KategoriPengeluaran
 import com.example.tugasbesarptb_colife.ui.theme.TugasBesarPTB_COLIFETheme
 import com.example.tugasbesarptb_colife.ui.theme.hijau30
+import com.example.tugasbesarptb_colife.viewmodel.KategoriViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TambahKategoriPengeluaranScreen(navController: NavController) {
+
+    val kategoriViewModel: KategoriViewModel = viewModel()
+    val context = LocalContext.current
+    val allKategori by kategoriViewModel.allKategori.observeAsState(initial = emptyList())
 
     var kategori by remember { mutableStateOf("") }
     var targetPengeluaran by remember { mutableStateOf("") }
@@ -116,7 +127,36 @@ fun TambahKategoriPengeluaranScreen(navController: NavController) {
             Spacer(modifier = Modifier.weight(1f))
 
             Button(
-                onClick = { /* TODO: Aksi tambah kategori */ },
+                onClick = {
+                    val target = targetPengeluaran.toLongOrNull()
+                    val namaKategoriTrim = kategori.trim()
+                    val isDuplicate = allKategori.any { it.nama.equals(namaKategoriTrim, ignoreCase = true) }
+
+                    when {
+                        namaKategoriTrim.isBlank() -> {
+                            Toast.makeText(context, "Nama kategori tidak boleh kosong", Toast.LENGTH_SHORT).show()
+                        }
+                        isDuplicate -> {
+                            Toast.makeText(context, "Nama kategori sudah ada", Toast.LENGTH_SHORT).show()
+                        }
+                        target == null || target <= 0 -> {
+                            Toast.makeText(context, "Target pengeluaran harus angka dan lebih dari 0", Toast.LENGTH_SHORT).show()
+                        }
+                        selectedColor == null -> {
+                            Toast.makeText(context, "Silakan pilih warna untuk kategori", Toast.LENGTH_SHORT).show()
+                        }
+                        else -> {
+                            val newKategori = KategoriPengeluaran(
+                                nama = namaKategoriTrim,
+                                target = target,
+                                warna = selectedColor!!.toArgb()
+                            )
+                            kategoriViewModel.insert(newKategori)
+                            Toast.makeText(context, "Kategori berhasil ditambahkan", Toast.LENGTH_SHORT).show()
+                            navController.popBackStack()
+                        }
+                    }
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5E8378)),
                 shape = RoundedCornerShape(30.dp),
                 modifier = Modifier.align(Alignment.End).height(48.dp).width(130.dp)
@@ -129,9 +169,9 @@ fun TambahKategoriPengeluaranScreen(navController: NavController) {
 
     if (showColorPicker) {
         ColorPickerDialog(
-            onColorSelected = { 
+            onColorSelected = {
                 selectedColor = it
-                showColorPicker = false 
+                showColorPicker = false
             },
             onDismiss = { showColorPicker = false }
         )

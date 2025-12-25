@@ -4,42 +4,40 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.tugasbesarptb_colife.data.local.dao.KategoriPengeluaranDao
+import com.example.tugasbesarptb_colife.data.local.dao.PemasukanDao
+import com.example.tugasbesarptb_colife.data.local.dao.PengeluaranDao
 import com.example.tugasbesarptb_colife.data.local.dao.PiutangDao
+import com.example.tugasbesarptb_colife.data.local.entity.KategoriPengeluaran
+import com.example.tugasbesarptb_colife.data.local.entity.Pemasukan
+import com.example.tugasbesarptb_colife.data.local.entity.Pengeluaran
 import com.example.tugasbesarptb_colife.data.local.entity.Piutang
 
 @Database(
-    entities = [Piutang::class],
-    version = 2, // versi baru
+    entities = [Piutang::class, Pemasukan::class, KategoriPengeluaran::class, Pengeluaran::class],
+    version = 4, // Naikkan versi
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
-    // DAO
     abstract fun piutangDao(): PiutangDao
+    abstract fun pemasukanDao(): PemasukanDao
+    abstract fun kategoriPengeluaranDao(): KategoriPengeluaranDao
+    abstract fun pengeluaranDao(): PengeluaranDao
 
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
-
-        // Migration dari versi 1 ke 2
-        private val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                // Tambahkan kolom baru untuk menyimpan URI bukti pembayaran
-                database.execSQL("ALTER TABLE Piutang ADD COLUMN buktiPembayaranUri TEXT")
-            }
-        }
 
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "colife_database" // nama database
+                    "colife_database"
                 )
-                    .addMigrations(MIGRATION_1_2) // panggil migration
-                    .build()
+                .fallbackToDestructiveMigration()
+                .build()
                 INSTANCE = instance
                 instance
             }
