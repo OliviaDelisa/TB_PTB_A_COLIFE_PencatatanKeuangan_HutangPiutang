@@ -1,4 +1,4 @@
-package com.example.tugasbesarptb_colife.pages
+package com.example.tugasbesarptb_colife.pages.piutang
 
 import android.os.Parcelable
 import androidx.compose.foundation.layout.*
@@ -148,7 +148,6 @@ fun EditPiutangScreen(navController: NavController) {
             }
         }
 
-        // Date picker di luar Column
         TanggalPicker(
             buka = showDatePicker,
             saatTutup = { showDatePicker = false },

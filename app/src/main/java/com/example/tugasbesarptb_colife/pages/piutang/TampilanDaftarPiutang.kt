@@ -1,4 +1,4 @@
-package com.example.tugasbesarptb_colife.pages
+package com.example.tugasbesarptb_colife.pages.piutang
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -141,7 +141,6 @@ fun DaftarPiutang(navController: NavController) {
         ) {
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            // DAFTAR PIUTANG AKTIF
             if (aktif.isNotEmpty()) {
                 item {
                     Text(
@@ -156,7 +155,6 @@ fun DaftarPiutang(navController: NavController) {
                     PiutangCard(
                         piutang = item,
                         onMarkDone = {
-                            // Pakai fungsi markPiutangSelesai supaya otomatis update Room + server
                             viewModel.markPiutangSelesai(item)
                         },
                         onEdit = {
@@ -185,7 +183,6 @@ fun DaftarPiutang(navController: NavController) {
             item { Text("Ditandai Selesai", fontWeight = FontWeight.Bold) }
             item { Spacer(modifier = Modifier.height(8.dp)) }
 
-            // DAFTAR PIUTANG SELESAI
             if (selesai.isEmpty()) {
                 item {
                     Text(

@@ -25,12 +25,12 @@ interface PiutangDao {
     @Query("DELETE FROM piutang WHERE userId = :userId")
     suspend fun deleteAllPiutang(userId: Int)
 
-    // Update bukti pembayaran saja tanpa merusak field lain
+
     @Query("UPDATE piutang SET buktiPembayaranUri = :uri WHERE id = :piutangId")
     suspend fun updateBuktiPembayaran(piutangId: Long, uri: String)
 
     @Query("UPDATE piutang SET serverId = :serverId WHERE id = :localId")
-    suspend fun updateServerId(localId: Long, serverId: Int?) // ✅ nullable
+    suspend fun updateServerId(localId: Long, serverId: Int?)
 
     @Query("SELECT * FROM piutang WHERE pendingSync = 1")
     fun getPendingSyncPiutang(): List<Piutang>

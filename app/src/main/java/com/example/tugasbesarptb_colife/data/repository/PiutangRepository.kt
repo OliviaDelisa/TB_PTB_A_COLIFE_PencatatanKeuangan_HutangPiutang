@@ -29,7 +29,6 @@ class PiutangRepository(
     fun getAllPiutang(): LiveData<List<Piutang>> =
         piutangDao.getAllPiutang(userId).asLiveData()
 
-    // ================= INSERT =================
     suspend fun insert(piutang: Piutang) {
         val localPiutang = piutang.copy(userId = userId, pendingSync = true)
         val localId = piutangDao.insert(localPiutang)
@@ -40,10 +39,10 @@ class PiutangRepository(
 
             if (response.isSuccessful) {
                 response.body()?.id?.let { serverId ->
-                    // 1️⃣ Update serverId di Room
+
                     piutangDao.updateServerId(localId, serverId)
 
-                    // 2️⃣ Update pendingSync tanpa kehilangan serverId
+
                     val updatedPiutang = localPiutang.copy(
                         id = localId,
                         serverId = serverId,
@@ -58,7 +57,6 @@ class PiutangRepository(
         }
     }
 
-    // ================= UPDATE DATA =================
     suspend fun update(piutang: Piutang) {
         val updatedPiutang = piutang.copy(pendingSync = true)
         piutangDao.update(updatedPiutang)
@@ -83,7 +81,6 @@ class PiutangRepository(
         }
     }
 
-    // ================= DELETE =================
     suspend fun delete(piutang: Piutang) {
         if (piutang.serverId == null) {
             piutangDao.delete(piutang)
@@ -109,7 +106,6 @@ class PiutangRepository(
         }
     }
 
-    // ================= UPLOAD BUKTI =================
     suspend fun uploadBukti(piutang: Piutang, uri: Uri, context: Context) {
         val localUri = uri.toString()
         val tanggalSelesaiFinal = piutang.tanggalSelesai ?: getCurrentDateString()
@@ -148,7 +144,6 @@ class PiutangRepository(
         }
     }
 
-    // ================= MAPPER =================
     private fun Piutang.toRequest(): PiutangRequest =
         PiutangRequest(
             userId = this.userId,
@@ -174,7 +169,7 @@ class PiutangRepository(
     private fun getCurrentDateString(): String =
         SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
-    // ================= SYNC PENDING =================
+
     suspend fun syncPending() {
         withContext(Dispatchers.IO) {
             val pendingList = piutangDao.getPendingSyncPiutang()
@@ -184,7 +179,7 @@ class PiutangRepository(
                         val response = apiService.createPiutang(piutang.toRequest())
                         if (response.isSuccessful) {
                             response.body()?.id?.let { serverId ->
-                                // Update serverId dan pendingSync
+
                                 piutangDao.updateServerId(piutang.id, serverId)
                                 val syncedPiutang = piutang.copy(
                                     serverId = serverId,

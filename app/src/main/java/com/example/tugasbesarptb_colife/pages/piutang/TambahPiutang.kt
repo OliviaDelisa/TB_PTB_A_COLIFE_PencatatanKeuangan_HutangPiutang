@@ -1,16 +1,15 @@
-package com.example.tugasbesarptb_colife.pages
+package com.example.tugasbesarptb_colife.pages.piutang
 
+import android.content.Intent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,20 +20,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import com.example.tugasbesarptb_colife.components.BottomNavBar
-import com.example.tugasbesarptb_colife.components.TopBar
 import com.example.tugasbesarptb_colife.components.TanggalPicker
 import com.example.tugasbesarptb_colife.data.repository.PiutangRepository
 import com.example.tugasbesarptb_colife.getCurrentDate
 import com.example.tugasbesarptb_colife.viewmodel.PiutangViewModel
 import com.example.tugasbesarptb_colife.viewmodel.PiutangViewModelFactory
-import kotlinx.coroutines.launch
 import com.example.tugasbesarptb_colife.SessionManager
 import com.example.tugasbesarptb_colife.data.local.AppDatabase
 import com.example.tugasbesarptb_colife.data.local.entity.Piutang
 import com.example.tugasbesarptb_colife.network.ApiClient
-
+import com.example.tugasbesarptb_colife.NotificationHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,18 +44,16 @@ fun TambahPiutang(navController: NavController) {
         )
     }
 
-
     val viewModel: PiutangViewModel = viewModel(
-        factory = remember {
-            PiutangViewModelFactory(repository)
-        },
+        factory = remember { PiutangViewModelFactory(repository) }
     )
+
     var nama by remember { mutableStateOf("") }
     var tanggalTagihan by remember { mutableStateOf("") }
     var jumlah by remember { mutableStateOf("") }
     var showDatePicker by remember { mutableStateOf(false) }
 
-    val today = getCurrentDate() // yyyy-MM-dd
+    val today = getCurrentDate()
 
     Scaffold(
         topBar = {
@@ -73,8 +66,7 @@ fun TambahPiutang(navController: NavController) {
                 }
             )
         }
-    )
-    { padding ->
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -82,7 +74,7 @@ fun TambahPiutang(navController: NavController) {
                 .padding(horizontal = 24.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.Top
         ) {
-            // Field Nama
+
             OutlinedTextField(
                 value = nama,
                 onValueChange = { nama = it },
@@ -94,7 +86,6 @@ fun TambahPiutang(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Field Tanggal Tagihan
             OutlinedTextField(
                 value = tanggalTagihan,
                 onValueChange = { tanggalTagihan = it },
@@ -112,7 +103,7 @@ fun TambahPiutang(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Field Jumlah
+
             OutlinedTextField(
                 value = jumlah,
                 onValueChange = { if (it.all { c -> c.isDigit() }) jumlah = it },
@@ -126,7 +117,7 @@ fun TambahPiutang(navController: NavController) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Tombol Simpan
+
             Button(
                 onClick = {
                     if (nama.isNotBlank() && tanggalTagihan.isNotBlank() && jumlah.isNotBlank()) {
@@ -140,6 +131,14 @@ fun TambahPiutang(navController: NavController) {
                             selesai = false
                         )
                         viewModel.insertPiutang(piutang)
+
+                        NotificationHelper.showNotification(
+                            context = context,
+                            title = " Piutang Ditambahkan",
+                            message = "Piutang \"$nama\" berhasil ditambahkan",
+                            intent = Intent(context, context.javaClass)
+                        )
+
                         navController.popBackStack()
                     }
                 },
@@ -154,7 +153,6 @@ fun TambahPiutang(navController: NavController) {
             }
         }
 
-        // Panggilan TanggalPicker hanya sekali dengan tanggalMin
         TanggalPicker(
             buka = showDatePicker,
             tanggalMin = today,
@@ -163,5 +161,3 @@ fun TambahPiutang(navController: NavController) {
         )
     }
 }
-
-

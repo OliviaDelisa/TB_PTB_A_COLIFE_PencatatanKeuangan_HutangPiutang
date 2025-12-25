@@ -1,4 +1,4 @@
-package com.example.tugasbesarptb_colife.pages
+package com.example.tugasbesarptb_colife.pages.piutang
 
 import android.content.Context
 import android.content.Intent
@@ -67,13 +67,12 @@ fun BuktiPembayaranScreen(navController: NavController) {
     val allPiutang by viewModel.allPiutang.observeAsState(emptyList())
     val piutangSelesai = allPiutang.filter { it.selesai }
 
-    // Map untuk menyimpan URI sementara, gunakan Long sebagai key
+
     val buktiPembayaran = remember { mutableStateMapOf<Long, Uri?>() }
 
     var selectedPiutangForImage by remember { mutableStateOf<Piutang?>(null) }
     var selectedImageFullScreen by remember { mutableStateOf<Uri?>(null) }
 
-    // Launcher untuk chooser kamera + galeri
     val chooserLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -83,7 +82,7 @@ fun BuktiPembayaranScreen(navController: NavController) {
 
         uri?.let {
             selectedPiutangForImage?.let { piutang ->
-                buktiPembayaran[piutang.id] = it // gunakan Long
+                buktiPembayaran[piutang.id] = it
                 viewModel.uploadBukti(piutang, it, context)
             }
         }

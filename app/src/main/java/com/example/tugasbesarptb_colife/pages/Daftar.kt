@@ -111,7 +111,7 @@ fun Daftar(navController: NavController) {
 
                 isLoading = true
 
-                // Panggil Retrofit dalam coroutine
+
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         val request = UserRegisterRequest(name, email, password)
