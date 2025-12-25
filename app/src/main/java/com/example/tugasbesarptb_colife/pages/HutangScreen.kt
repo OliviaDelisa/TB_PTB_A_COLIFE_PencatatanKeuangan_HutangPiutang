@@ -29,8 +29,6 @@ fun HutangScreen(navController: NavHostController) {
     var hutangList by remember { mutableStateOf<List<HutangItem>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
-
-    // ================= REFRESH =================
     val refresh = navController.currentBackStackEntry
         ?.savedStateHandle
         ?.getStateFlow<Boolean>("refresh", false)
@@ -49,7 +47,6 @@ fun HutangScreen(navController: NavHostController) {
         }
     }
 
-    // ================= FIRST LOAD =================
     LaunchedEffect(Unit) {
         loadHutangData(
             onSuccess = { hutangList = it },
@@ -61,7 +58,6 @@ fun HutangScreen(navController: NavHostController) {
     Scaffold(
         bottomBar = { BottomNavBar(navController, "hutang") },
 
-        // 🔥 DUA FAB SEKALIGUS
         floatingActionButton = {
             Row(
                 modifier = Modifier
@@ -70,7 +66,6 @@ fun HutangScreen(navController: NavHostController) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
 
-                // ================= STRUK HUTANG (KIRI) =================
                 FloatingActionButton(
                     onClick = {
                         navController.navigate("strukhutang")
@@ -84,7 +79,6 @@ fun HutangScreen(navController: NavHostController) {
                     )
                 }
 
-                // ================= TAMBAH HUTANG (KANAN) =================
                 FloatingActionButton(
                     onClick = {
                         navController.navigate("tambahhutang")
@@ -107,14 +101,12 @@ fun HutangScreen(navController: NavHostController) {
                 .padding(inner)
         ) {
 
-            // ================= TITLE =================
             Text(
                 text = "List Hutang",
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(start = 20.dp, top = 20.dp)
             )
 
-            // ================= HISTORY BUTTON =================
             IconButton(
                 onClick = { navController.navigate("historyhutang") },
                 modifier = Modifier
@@ -124,7 +116,6 @@ fun HutangScreen(navController: NavHostController) {
                 Icon(Icons.Default.History, contentDescription = "History")
             }
 
-            // ================= LOADING =================
             when {
                 loading -> {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
@@ -186,7 +177,6 @@ fun HutangScreen(navController: NavHostController) {
                                     }
                                 },
 
-                                // ===== EDIT =====
                                 onEdit = {
                                     navController.currentBackStackEntry
                                         ?.savedStateHandle
@@ -194,7 +184,6 @@ fun HutangScreen(navController: NavHostController) {
                                     navController.navigate("edithutang")
                                 },
 
-                                // ===== DELETE =====
                                 onDelete = {
                                     scope.launch {
                                         try {
@@ -219,9 +208,6 @@ fun HutangScreen(navController: NavHostController) {
     }
 }
 
-// =====================================================
-//  LOAD DATA FUNCTION
-// =====================================================
 suspend fun loadHutangData(
     onSuccess: (List<HutangItem>) -> Unit,
     onError: (String) -> Unit,

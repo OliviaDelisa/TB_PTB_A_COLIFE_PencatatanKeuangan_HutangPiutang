@@ -42,13 +42,13 @@ fun EditHutangScreen(navController: NavHostController) {
         ?.get<HutangItem>("editData")
 
     // Formatter tanggal
-    val dbFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())   // format dari API
-    val uiFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())   // format tampilan UI
+    val dbFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    val uiFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
-    // ========== STATE ==========
+
     var namaPeminjam by remember { mutableStateOf(editData?.nama ?: "") }
 
-    // Parse tanggal dari editData
+
     var tanggalTagihan by remember {
         mutableStateOf(
             editData?.tanggal?.let {
@@ -87,7 +87,6 @@ fun EditHutangScreen(navController: NavHostController) {
                     modifier = Modifier.padding(bottom = 20.dp)
                 )
 
-                // ================== NAMA ==================
                 Text("Nama Peminjam")
                 OutlinedTextField(
                     value = namaPeminjam,
@@ -97,8 +96,6 @@ fun EditHutangScreen(navController: NavHostController) {
                         .padding(vertical = 8.dp),
                     shape = RoundedCornerShape(15.dp)
                 )
-
-                // ================== TANGGAL ==================
                 Text("Tanggal Tagihan")
                 OutlinedTextField(
                     value = tanggalTagihan?.let { uiFormat.format(Date(it)) } ?: "",
@@ -115,7 +112,6 @@ fun EditHutangScreen(navController: NavHostController) {
                     shape = RoundedCornerShape(15.dp)
                 )
 
-                // ================== JUMLAH ==================
                 Text("Jumlah Pinjaman")
                 OutlinedTextField(
                     value = jumlahPinjaman,
@@ -136,11 +132,9 @@ fun EditHutangScreen(navController: NavHostController) {
                 )
             }
 
-            // ================== BUTTON SIMPAN ==================
             Button(
                 onClick = {
                     scope.launch {
-                        // 1. Validasi Data
                         if (editData == null) {
                             Toast.makeText(context, "Data hutang tidak ditemukan!", Toast.LENGTH_SHORT).show()
                             return@launch
@@ -162,19 +156,16 @@ fun EditHutangScreen(navController: NavHostController) {
                             jumlah = jumlahInt
                         )
 
-                        // 3. Request API
                         try {
                             val res = ApiClient.instance.updateHutang(editData.id, req)
 
                             if (res.isSuccessful && res.body()?.success == true) {
                                 Toast.makeText(context, "Data berhasil diperbarui!", Toast.LENGTH_SHORT).show()
-                                
-                                // Trigger refresh di halaman sebelumnya
+
                                 navController.previousBackStackEntry
                                     ?.savedStateHandle
                                     ?.set("refresh", true)
 
-                                // Kembali ke halaman list
                                 navController.popBackStack()
                             } else {
                                 val errorMsg = res.errorBody()?.string() ?: "Gagal update dari server"
@@ -182,7 +173,6 @@ fun EditHutangScreen(navController: NavHostController) {
                             }
 
                         } catch (e: Exception) {
-                            // Error koneksi atau exception lain
                             Toast.makeText(context, "Error koneksi: ${e.message}", Toast.LENGTH_LONG).show()
                             e.printStackTrace()
                         }
@@ -202,7 +192,6 @@ fun EditHutangScreen(navController: NavHostController) {
                 )
             }
 
-            // ================== DATE PICKER ==================
             if (showDatePicker) {
                 DatePickerDialog(
                     onDismissRequest = { showDatePicker = false },

@@ -68,7 +68,6 @@ fun TambahHutangScreen(navController: NavHostController) {
                     modifier = Modifier.padding(bottom = 20.dp)
                 )
 
-                // === INPUT NAMA ===
                 Text("Nama Peminjam")
                 OutlinedTextField(
                     value = namaPeminjam,
@@ -80,7 +79,6 @@ fun TambahHutangScreen(navController: NavHostController) {
 
                 Spacer(Modifier.height(10.dp))
 
-                // === INPUT TANGGAL ===
                 Text("Tanggal Tagihan")
                 OutlinedTextField(
                     value = if (tanggalTagihan != null)
@@ -100,7 +98,6 @@ fun TambahHutangScreen(navController: NavHostController) {
 
                 Spacer(Modifier.height(10.dp))
 
-                // === INPUT NOMINAL ===
                 Text("Nominal Pinjaman")
                 OutlinedTextField(
                     value = jumlahPinjaman,
@@ -125,7 +122,6 @@ fun TambahHutangScreen(navController: NavHostController) {
                 )
             }
 
-            // =============== TOMBOL SIMPAN ===============
             Button(
                 onClick = {
 
@@ -143,7 +139,6 @@ fun TambahHutangScreen(navController: NavHostController) {
                         jumlah = jumlahBersih
                     )
 
-                    // CALL API
                     CoroutineScope(Dispatchers.IO).launch {
                         val response = ApiClient.instance.tambahHutang(request)
 
@@ -169,7 +164,6 @@ fun TambahHutangScreen(navController: NavHostController) {
             }
         }
 
-        // POPUP DATE PICKER
         if (showDatePicker) {
             DatePickerDialog(
                 onDismissRequest = { showDatePicker = false },

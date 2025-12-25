@@ -66,7 +66,6 @@ fun StrukHutangScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    // Data dari Server
     var listGambarServer by remember { mutableStateOf<List<GambarHutang>>(emptyList()) }
 
     // Loading & UI States
@@ -76,9 +75,6 @@ fun StrukHutangScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var selectedIdToDelete by remember { mutableStateOf<Int?>(null) }
 
-    // ================= FUNGSI LOGIKA =================
-
-    // 1. REFRESH (Ambil data)
     fun refreshData() {
         scope.launch {
             isLoading = true
@@ -97,7 +93,6 @@ fun StrukHutangScreen(
         }
     }
 
-    // 2. UPLOAD
     fun uploadGambar(uri: Uri) {
         scope.launch {
             isUploading = true
@@ -126,7 +121,6 @@ fun StrukHutangScreen(
         }
     }
 
-    // 3. HAPUS
     fun hapusGambar(idGambar: Int) {
         scope.launch {
             try {
@@ -145,12 +139,9 @@ fun StrukHutangScreen(
         }
     }
 
-    // Auto-Load saat pertama buka
     LaunchedEffect(Unit) {
         refreshData()
     }
-
-    // Launchers (Kamera & Galeri)
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri -> uri?.let { uploadGambar(it) } }
@@ -171,21 +162,18 @@ fun StrukHutangScreen(
         }
     }
 
-    // ================= TAMPILAN UI =================
     TugasBesarPTB_COLIFETheme {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            // JUDUL
             Text(
                 text = "Bukti Struk Hutang",
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(start = 20.dp, top = 20.dp)
             )
 
-            // LIST GAMBAR
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else if (listGambarServer.isEmpty()) {
@@ -202,9 +190,6 @@ fun StrukHutangScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Column {
-                                // === INI PERBAIKANNYA ===
-                                // Kita gabungkan Alamat Server + Nama File
-                                // Contoh jadi: http://192.168.1.8:3000/uploads/foto.jpg
                                 val fullUrl = BASE_URL_SERVER + gambar.imageUrl
 
                                 Image(
@@ -217,7 +202,6 @@ fun StrukHutangScreen(
                                     contentScale = ContentScale.Crop
                                 )
 
-                                // Tombol Hapus
                                 Row(
                                     modifier = Modifier.fillMaxWidth().padding(8.dp),
                                     horizontalArrangement = Arrangement.End
@@ -237,7 +221,6 @@ fun StrukHutangScreen(
                 }
             }
 
-            // Loading Upload
             if (isUploading) {
                 Box(
                     modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha=0.5f)).clickable(enabled=false){},
@@ -253,7 +236,6 @@ fun StrukHutangScreen(
                 }
             }
 
-            // Popup Menu
             AnimatedVisibility(
                 visible = showMenu,
                 enter = fadeIn() + expandVertically(),
@@ -270,8 +252,6 @@ fun StrukHutangScreen(
                     }
                 }
             }
-
-            // FAB Tambah
             FloatingActionButton(
                 onClick = { showMenu = !showMenu },
                 modifier = Modifier.align(Alignment.BottomEnd).padding(30.dp),
@@ -280,7 +260,6 @@ fun StrukHutangScreen(
                 Icon(Icons.Default.Add, null, tint = Color.White)
             }
 
-            // Dialog Hapus
             if (showDeleteDialog && selectedIdToDelete != null) {
                 AlertDialog(
                     onDismissRequest = { showDeleteDialog = false; selectedIdToDelete = null },

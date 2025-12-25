@@ -45,7 +45,6 @@ fun HutangCard(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showDoneDialog by remember { mutableStateOf(false) }
 
-    // ===================== POPUP MARK DONE =====================
     if (showDoneDialog) {
         AlertDialog(
             onDismissRequest = { showDoneDialog = false },
@@ -69,7 +68,6 @@ fun HutangCard(
         )
     }
 
-    // ===================== POPUP DELETE =====================
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
@@ -93,7 +91,6 @@ fun HutangCard(
         )
     }
 
-    // ===================== KARTU =====================
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -113,8 +110,6 @@ fun HutangCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-
-            // ===================== KIRI (Nama + tanggal) =====================
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = item.nama,
@@ -128,7 +123,6 @@ fun HutangCard(
                 Text(text = item.tanggal ?: "-", color = Color.Gray, fontSize = 14.sp)
             }
 
-            // ===================== TENGAH (Jumlah) =====================
             Text(
                 text = "Rp${item.jumlah}",
                 style = MaterialTheme.typography.bodyLarge.copy(
@@ -140,7 +134,6 @@ fun HutangCard(
                 overflow = TextOverflow.Ellipsis
             )
 
-            // ===================== KANAN (Aksi) =====================
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
 
                 // ✔ TANDAI SELESAI
@@ -152,7 +145,6 @@ fun HutangCard(
                     )
                 }
 
-                // ✏ EDIT
                 IconButton(onClick = onEdit) {
                     Icon(
                         Icons.Default.Edit,
@@ -161,7 +153,6 @@ fun HutangCard(
                     )
                 }
 
-                // 🗑 DELETE
                 IconButton(onClick = { showDeleteDialog = true }) {
                     Icon(
                         Icons.Default.Delete,
