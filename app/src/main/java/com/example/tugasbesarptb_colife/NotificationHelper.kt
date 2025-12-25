@@ -5,7 +5,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color // <- import yang benar
+import android.graphics.Color 
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import kotlin.random.Random
@@ -18,7 +18,6 @@ object NotificationHelper {
     fun showNotification(context: Context, title: String, message: String, intent: Intent? = null) {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // Buat channel untuk Android 8+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (manager.getNotificationChannel(CHANNEL_ID) == null) {
                 val channel = NotificationChannel(
@@ -28,7 +27,7 @@ object NotificationHelper {
                 ).apply {
                     description = CHANNEL_DESCRIPTION
                     enableLights(true)
-                    lightColor = Color.RED // <- gunakan android.graphics.Color
+                    lightColor = Color.RED 
                     enableVibration(true)
                     vibrationPattern = longArrayOf(0, 300, 200, 300)
                 }
@@ -36,19 +35,16 @@ object NotificationHelper {
             }
         }
 
-        // Flags PendingIntent
         val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
         } else {
             PendingIntent.FLAG_UPDATE_CURRENT
         }
 
-        // PendingIntent
         val pendingIntent = intent?.let {
             PendingIntent.getActivity(context, Random.nextInt(0, Int.MAX_VALUE), it, flags)
         }
 
-        // Build notifikasi
         val notif = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(title)
