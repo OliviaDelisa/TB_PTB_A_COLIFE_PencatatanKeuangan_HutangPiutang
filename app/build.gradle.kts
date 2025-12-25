@@ -80,6 +80,9 @@ dependencies {
     // Image loading
     implementation("io.coil-kt:coil-compose:2.6.0")
 
+    // Permissions
+    implementation("com.google.accompanist:accompanist-permissions:0.32.0")
+
     // Preferences
     implementation("androidx.preference:preference:1.2.1")
 

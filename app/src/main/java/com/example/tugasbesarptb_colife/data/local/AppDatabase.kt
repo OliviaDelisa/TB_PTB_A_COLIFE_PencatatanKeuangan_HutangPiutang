@@ -21,7 +21,7 @@ import java.util.concurrent.Executors
 
 @Database(
     entities = [Piutang::class, Pemasukan::class, KategoriPengeluaran::class, Pengeluaran::class],
-    version = 5, // Naikkan versi ke 5
+    version = 6, // Naikkan versi ke 6
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
