@@ -1,55 +1,34 @@
+
 package com.example.tugasbesarptb_colife.data.local
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.tugasbesarptb_colife.data.local.dao.KategoriPengeluaranDao
+import com.example.tugasbesarptb_colife.data.local.dao.PemasukanDao
 import com.example.tugasbesarptb_colife.data.local.dao.PengeluaranDao
 import com.example.tugasbesarptb_colife.data.local.dao.PiutangDao
+import com.example.tugasbesarptb_colife.data.local.entity.KategoriPengeluaran
+import com.example.tugasbesarptb_colife.data.local.entity.Pemasukan
 import com.example.tugasbesarptb_colife.data.local.entity.Pengeluaran
 import com.example.tugasbesarptb_colife.data.local.entity.Piutang
 
 @Database(
-    entities = [Piutang::class, Pengeluaran::class],
-    version = 4, // Incremented version to 4
+    entities = [Piutang::class, Pemasukan::class, KategoriPengeluaran::class, Pengeluaran::class],
+    version = 4, // Naikkan versi
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
-    abstract fun pengeluaranDao(): PengeluaranDao
     abstract fun piutangDao(): PiutangDao
+    abstract fun pemasukanDao(): PemasukanDao
+    abstract fun kategoriPengeluaranDao(): KategoriPengeluaranDao
+    abstract fun pengeluaranDao(): PengeluaranDao
 
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
-
-        private val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE Piutang ADD COLUMN buktiPembayaranUri TEXT")
-            }
-        }
-
-        private val MIGRATION_2_3 = object : Migration(2, 3) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("""
-                    CREATE TABLE `pengeluaran` (
-                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                        `nama` TEXT NOT NULL,
-                        `tanggal` TEXT NOT NULL,
-                        `jumlah` TEXT NOT NULL,
-                        `kategori` TEXT NOT NULL
-                    )
-                """.trimIndent())
-            }
-        }
-
-        private val MIGRATION_3_4 = object : Migration(3, 4) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE pengeluaran ADD COLUMN fotoUri TEXT")
-            }
-        }
 
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
@@ -58,7 +37,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "colife_database"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance

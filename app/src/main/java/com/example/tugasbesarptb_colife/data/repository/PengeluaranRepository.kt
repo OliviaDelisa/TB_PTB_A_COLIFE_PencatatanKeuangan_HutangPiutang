@@ -1,25 +1,27 @@
 package com.example.tugasbesarptb_colife.data.repository
 
+import androidx.lifecycle.LiveData
 import com.example.tugasbesarptb_colife.data.local.dao.PengeluaranDao
+import com.example.tugasbesarptb_colife.data.local.dao.PengeluaranWithKategori
 import com.example.tugasbesarptb_colife.data.local.entity.Pengeluaran
-import kotlinx.coroutines.flow.Flow
 
 class PengeluaranRepository(private val pengeluaranDao: PengeluaranDao) {
 
-    fun getAllPengeluaran(): Flow<List<Pengeluaran>> = pengeluaranDao.getAllPengeluaran()
+    val allPengeluaran: LiveData<List<PengeluaranWithKategori>> = pengeluaranDao.getAllPengeluaranWithKategori()
 
-    // ✅ Tambahkan fungsi untuk mengambil satu item
-    fun getPengeluaranById(id: Int): Flow<Pengeluaran?> = pengeluaranDao.getPengeluaranById(id)
-
-    suspend fun insertPengeluaran(pengeluaran: Pengeluaran) {
+    suspend fun insert(pengeluaran: Pengeluaran) {
         pengeluaranDao.insertPengeluaran(pengeluaran)
     }
 
-    suspend fun updatePengeluaran(pengeluaran: Pengeluaran) {
+    suspend fun update(pengeluaran: Pengeluaran) {
         pengeluaranDao.updatePengeluaran(pengeluaran)
     }
 
-    suspend fun deletePengeluaran(pengeluaran: Pengeluaran) {
+    suspend fun delete(pengeluaran: Pengeluaran) {
         pengeluaranDao.deletePengeluaran(pengeluaran)
+    }
+
+    fun getPengeluaranById(id: Int): LiveData<Pengeluaran> {
+        return pengeluaranDao.getPengeluaranById(id)
     }
 }
