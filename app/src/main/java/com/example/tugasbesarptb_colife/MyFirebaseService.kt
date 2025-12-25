@@ -76,7 +76,7 @@ class MyFirebaseService : FirebaseMessagingService() {
         val manager = getSystemService(NotificationManager::class.java)
 
         if (manager != null) {
-            // Buat channel untuk Android 8.0+
+        
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val channel = NotificationChannel(
                     CHANNEL_ID,
