@@ -4,13 +4,10 @@ const db = require("../config/db");
 const multer = require("multer");
 const path = require("path");
 
-// =========================
-//  1. SETUP PENYIMPANAN GAMBAR
-// =========================
 const storage = multer.diskStorage({
   destination: "uploads/",
   filename: (req, file, cb) => {
-    // Nama file unik: angka_acak + waktu + ekstensi asli
+   
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, uniqueSuffix + path.extname(file.originalname));
   },
@@ -18,11 +15,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// =========================
-//  2. FITUR UTAMA (HUTANG)
-// =========================
-
-// ADD HUTANG
 router.post("/add", (req, res) => {
   const { nama, tanggal, jumlah } = req.body;
   if (!nama || !tanggal || jumlah == null) {
@@ -35,7 +27,6 @@ router.post("/add", (req, res) => {
   });
 });
 
-// GET ALL HUTANG
 router.get("/", (req, res) => {
   const query = "SELECT * FROM hutang ORDER BY id DESC";
   db.query(query, (err, result) => {
@@ -44,7 +35,6 @@ router.get("/", (req, res) => {
   });
 });
 
-// UPDATE HUTANG
 router.put("/update/:id", (req, res) => {
   const { id } = req.params;
   const { nama, tanggal, jumlah } = req.body;
@@ -55,7 +45,6 @@ router.put("/update/:id", (req, res) => {
   });
 });
 
-// DELETE HUTANG
 router.delete("/delete/:id", (req, res) => {
   const { id } = req.params;
   const query = "DELETE FROM hutang WHERE id = ?";
@@ -65,7 +54,6 @@ router.delete("/delete/:id", (req, res) => {
   });
 });
 
-// SELESAIKAN HUTANG (PINDAH KE HISTORY)
 router.post("/selesai/:id", (req, res) => {
   const { id } = req.params;
   const selectQuery = "SELECT * FROM hutang WHERE id = ?";
@@ -86,7 +74,6 @@ router.post("/selesai/:id", (req, res) => {
   });
 });
 
-// GET HISTORY
 router.get("/history", (req, res) => {
   const query = "SELECT * FROM history_hutang ORDER BY tanggal_selesai DESC";
   db.query(query, (err, result) => {
@@ -95,11 +82,6 @@ router.get("/history", (req, res) => {
   });
 });
 
-// ================================================================
-//  3. FITUR GAMBAR BUKTI (UPLOAD, LIHAT, HAPUS)
-// ================================================================
-
-// A. UPLOAD GAMBAR (Simpan ke tabel gambarhutang)
 router.post("/upload-bukti", upload.single("image"), (req, res) => {
     const hutangId = req.body.hutang_id;
     
@@ -110,8 +92,6 @@ router.post("/upload-bukti", upload.single("image"), (req, res) => {
       });
     }
   
-    // Simpan path relatif (folder/namafile.jpg)
-    // Nanti Android yang akan menambahkan http://IP-ADDRESS/ di depannya
     const imagePath = "uploads/" + req.file.filename;
   
     const query = `INSERT INTO gambarhutang (hutang_id, image_url) VALUES (?, ?)`;
@@ -133,7 +113,6 @@ router.post("/upload-bukti", upload.single("image"), (req, res) => {
     });
 });
 
-// B. AMBIL LIST GAMBAR (Berdasarkan ID Hutang) -> Supaya Auto Load
 router.get("/gambar/:id", (req, res) => {
     const id = req.params.id;
     const query = "SELECT * FROM gambarhutang WHERE hutang_id = ? ORDER BY created_at DESC";
@@ -143,15 +122,13 @@ router.get("/gambar/:id", (req, res) => {
         
         res.json({
             success: true,
-            data: result // Array berisi list gambar
+            data: result 
         });
     });
 });
 
-// C. HAPUS GAMBAR SATUAN
 router.delete("/gambar/delete/:id", (req, res) => {
     const id = req.params.id;
-    // Kita hapus datanya dari tabel gambarhutang
     db.query("DELETE FROM gambarhutang WHERE id = ?", [id], (err) => {
         if (err) return res.status(500).json({ success: false, message: "Gagal hapus gambar" });
         res.json({ success: true, message: "Gambar berhasil dihapus" });
