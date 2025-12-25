@@ -25,7 +25,12 @@ import com.example.tugasbesarptb_colife.SessionManager
 import com.example.tugasbesarptb_colife.model.UserLoginRequest
 import com.example.tugasbesarptb_colife.network.ApiClient
 import com.example.tugasbesarptb_colife.ui.theme.hijau30
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
 
 @Composable
 fun Login(navController: NavController) {
@@ -122,8 +127,21 @@ fun Login(navController: NavController) {
                         if (response.isSuccessful && response.body()?.success == true) {
                             val body = response.body()!!
 
-                            // ✅ Simpan session userId
-                            sessionManager.saveUserId(body.userId)
+                            // Simpan session userId
+                            sessionManager.saveLogin(body.userId)
+
+                            // Ambil token FCM dan kirim ke backend
+                            FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    val token = task.result
+                                    Log.d("FCM Token", "Token: $token")
+                                    scope.launch {
+                                        sendTokenToBackend(body.userId, token)
+                                    }
+                                } else {
+                                    Log.e("FCM Token", "Gagal ambil token")
+                                }
+                            }
 
                             Toast.makeText(context, "Login berhasil!", Toast.LENGTH_SHORT).show()
 
@@ -177,5 +195,23 @@ fun Login(navController: NavController) {
                 Text("Sign up", color = hijau30, fontWeight = FontWeight.SemiBold)
             }
         }
+    }
+}
+
+suspend fun sendTokenToBackend(userId: Int, token: String) {
+    try {
+        val url = "http://10.0.2.2:3000/api/fcm/save-fcm-token"
+        // ganti sesuai IP server
+        val json = """{ "userId": "$userId", "fcmToken": "$token" }"""
+        val client = OkHttpClient()
+        val body = RequestBody.create(
+            "application/json; charset=utf-8".toMediaType(),
+            json
+        )
+        val request = Request.Builder().url(url).post(body).build()
+        val response = client.newCall(request).execute()
+        Log.d("FCM Token", "Response: ${response.body?.string()}")
+    } catch (e: Exception) {
+        Log.e("FCM Token", "Error: ${e.message}")
     }
 }

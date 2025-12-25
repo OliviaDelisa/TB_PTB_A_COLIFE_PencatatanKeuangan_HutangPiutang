@@ -1,13 +1,16 @@
 package com.example.tugasbesarptb_colife.network
 
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
+import okhttp3.RequestBody
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 object ApiClient {
 
-    // IP LAPTOP kamu dari ipconfig
     private const val BASE_URL = "http://10.0.2.2:3000/"
 
     private val logging = HttpLoggingInterceptor().apply {
@@ -15,25 +18,28 @@ object ApiClient {
     }
 
     private val client = OkHttpClient.Builder()
-        .addInterceptor { chain ->
-            val request = chain.request().newBuilder()
-                .addHeader("Accept", "application/json")
-                .addHeader("Content-Type", "application/json")
-                // kalau backend pakai auth token:
-                // .addHeader("Authorization", "Bearer $TOKEN")
-                .build()
-            chain.proceed(request)
-        }
+        .connectTimeout(60, TimeUnit.SECONDS) // upload bisa lama
+        .readTimeout(60, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
         .addInterceptor(logging)
         .build()
 
-
-    val instance: ApiService by lazy {
+    private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(ApiService::class.java)
+    }
+
+    val instance: ApiService by lazy {
+        retrofit.create(ApiService::class.java)
+    }
+
+    // Fungsi bantu bikin MultipartBody.Part dari file
+    fun prepareFilePart(partName: String, filePath: String): MultipartBody.Part {
+        val file = java.io.File(filePath)
+        val requestFile = RequestBody.create("image/*".toMediaTypeOrNull(), file)
+        return MultipartBody.Part.createFormData(partName, file.name, requestFile)
     }
 }

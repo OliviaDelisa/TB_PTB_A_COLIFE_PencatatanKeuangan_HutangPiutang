@@ -1,4 +1,4 @@
-package com.example.tugasbesarptb_colife.pages
+package com.example.tugasbesarptb_colife.pages.piutang
 
 import android.os.Parcelable
 import androidx.compose.foundation.layout.*

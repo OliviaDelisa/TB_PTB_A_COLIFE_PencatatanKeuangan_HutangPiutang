@@ -1,4 +1,4 @@
-package com.example.tugasbesarptb_colife.pages
+package com.example.tugasbesarptb_colife.pages.piutang
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

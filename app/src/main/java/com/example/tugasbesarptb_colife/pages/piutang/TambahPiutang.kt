@@ -1,16 +1,15 @@
-package com.example.tugasbesarptb_colife.pages
+package com.example.tugasbesarptb_colife.pages.piutang
 
+import android.content.Intent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,20 +20,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import com.example.tugasbesarptb_colife.components.BottomNavBar
-import com.example.tugasbesarptb_colife.components.TopBar
 import com.example.tugasbesarptb_colife.components.TanggalPicker
 import com.example.tugasbesarptb_colife.data.repository.PiutangRepository
 import com.example.tugasbesarptb_colife.getCurrentDate
 import com.example.tugasbesarptb_colife.viewmodel.PiutangViewModel
 import com.example.tugasbesarptb_colife.viewmodel.PiutangViewModelFactory
-import kotlinx.coroutines.launch
 import com.example.tugasbesarptb_colife.SessionManager
 import com.example.tugasbesarptb_colife.data.local.AppDatabase
 import com.example.tugasbesarptb_colife.data.local.entity.Piutang
 import com.example.tugasbesarptb_colife.network.ApiClient
-
+import com.example.tugasbesarptb_colife.NotificationHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,12 +44,10 @@ fun TambahPiutang(navController: NavController) {
         )
     }
 
-
     val viewModel: PiutangViewModel = viewModel(
-        factory = remember {
-            PiutangViewModelFactory(repository)
-        },
+        factory = remember { PiutangViewModelFactory(repository) }
     )
+
     var nama by remember { mutableStateOf("") }
     var tanggalTagihan by remember { mutableStateOf("") }
     var jumlah by remember { mutableStateOf("") }
@@ -73,8 +66,7 @@ fun TambahPiutang(navController: NavController) {
                 }
             )
         }
-    )
-    { padding ->
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -140,6 +132,15 @@ fun TambahPiutang(navController: NavController) {
                             selesai = false
                         )
                         viewModel.insertPiutang(piutang)
+
+                        // --- Notifikasi lokal setelah berhasil menambahkan piutang ---
+                        NotificationHelper.showNotification(
+                            context = context,
+                            title = " Piutang Ditambahkan",
+                            message = "Piutang \"$nama\" berhasil ditambahkan",
+                            intent = Intent(context, context.javaClass) // buka MainActivity
+                        )
+
                         navController.popBackStack()
                     }
                 },
@@ -154,7 +155,7 @@ fun TambahPiutang(navController: NavController) {
             }
         }
 
-        // Panggilan TanggalPicker hanya sekali dengan tanggalMin
+        // Panggilan TanggalPicker
         TanggalPicker(
             buka = showDatePicker,
             tanggalMin = today,
@@ -163,5 +164,3 @@ fun TambahPiutang(navController: NavController) {
         )
     }
 }
-
-

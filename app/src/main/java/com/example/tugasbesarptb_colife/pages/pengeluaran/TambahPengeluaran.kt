@@ -1,4 +1,4 @@
-package com.example.tugasbesarptb_colife.pages.pemasukan
+package com.example.tugasbesarptb_colife.pages.pengeluaran
 
 import android.Manifest
 import android.net.Uri
@@ -17,12 +17,12 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,12 +33,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
-import com.example.tugasbesarptb_colife.components.BottomNavBar
 import com.example.tugasbesarptb_colife.components.TanggalPicker
-import com.example.tugasbesarptb_colife.data.local.entity.Pemasukan
+import com.example.tugasbesarptb_colife.data.local.entity.KategoriPengeluaran
+import com.example.tugasbesarptb_colife.data.local.entity.Pengeluaran
 import com.example.tugasbesarptb_colife.ui.theme.TugasBesarPTB_COLIFETheme
 import com.example.tugasbesarptb_colife.ui.theme.hijau30
-import com.example.tugasbesarptb_colife.viewmodel.PemasukanViewModel
+import com.example.tugasbesarptb_colife.viewmodel.KategoriViewModel
+import com.example.tugasbesarptb_colife.viewmodel.PengeluaranViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -48,24 +49,27 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
-fun TambahPemasukanScreen(navController: NavController) {
-
-    val pemasukanViewModel: PemasukanViewModel = viewModel()
+fun TambahPengeluaranScreen(navController: NavController) {
+    val pengeluaranViewModel: PengeluaranViewModel = viewModel()
+    val kategoriViewModel: KategoriViewModel = viewModel()
     val context = LocalContext.current
 
-    var sumberPemasukan by remember { mutableStateOf("") }
-    var tanggalPemasukan by remember { mutableStateOf("") }
-    var jumlahPemasukan by remember { mutableStateOf("") }
+    var nama by remember { mutableStateOf("") }
+    var jumlah by remember { mutableStateOf("") }
+    var tanggal by remember { mutableStateOf("") }
     var showDatePicker by remember { mutableStateOf(false) }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var tempImageUri by remember { mutableStateOf<Uri?>(null) }
 
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
-    val currentRoute = navController.currentBackStackEntry?.destination?.route
 
-    val isFormValid by remember(sumberPemasukan, tanggalPemasukan, jumlahPemasukan) {
+    val allKategori by kategoriViewModel.allKategori.observeAsState(initial = emptyList())
+    var selectedKategori by remember { mutableStateOf<KategoriPengeluaran?>(null) }
+    var isKategoriExpanded by remember { mutableStateOf(false) }
+
+    val isFormValid by remember(nama, jumlah, tanggal, selectedKategori) {
         derivedStateOf {
-            sumberPemasukan.isNotBlank() && tanggalPemasukan.isNotBlank() && jumlahPemasukan.isNotBlank()
+            nama.isNotBlank() && (jumlah.toLongOrNull() ?: 0L) > 0 && tanggal.isNotBlank() && selectedKategori != null
         }
     }
 
@@ -96,46 +100,58 @@ fun TambahPemasukanScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Tambahkan Pemasukan", fontWeight = FontWeight.Bold, fontSize = 22.sp) },
+                title = { Text("Tambah Pengeluaran", fontWeight = FontWeight.Bold, fontSize = 22.sp) },
                 navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Default.ArrowBack, "Kembali") } },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White,
-                    titleContentColor = Color.Black,
-                    navigationIconContentColor = Color.Black
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White, titleContentColor = Color.Black)
             )
-        },
-        bottomBar = { BottomNavBar(navController = navController, currentRoute = currentRoute) },
-        containerColor = Color.White
-    ) { innerPadding ->
+        }
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 24.dp)
-                .verticalScroll(rememberScrollState())
+                .padding(padding)
+                .padding(horizontal = 24.dp, vertical = 16.dp)
+                .verticalScroll(rememberScrollState()), // Make the column scrollable
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
+            FormInput(label = "Nama Pengeluaran", value = nama, onValueChange = { nama = it })
 
-            FormInput(
-                label = "Sumber Pemasukan",
-                value = sumberPemasukan,
-                onValueChange = { sumberPemasukan = it },
-                placeholder = "Masukkan sumber pemasukan"
-            )
+            TanggalInput(label = "Tanggal", value = tanggal, onClick = { showDatePicker = true })
 
-            TanggalInput(label = "Tanggal Pemasukan", value = tanggalPemasukan, onClick = { showDatePicker = true })
+            FormInput(label = "Jumlah", value = jumlah, onValueChange = { jumlah = it }, keyboardType = KeyboardType.Number, trailingIcon = { Text("Rp") })
 
-            FormInput(
-                label = "Jumlah Pemasukan",
-                value = jumlahPemasukan,
-                onValueChange = { jumlahPemasukan = it },
-                placeholder = "Masukkan nominal pemasukan",
-                keyboardType = KeyboardType.Number,
-                trailingIcon = { Text("Rp", color = Color.Gray, modifier = Modifier.padding(end = 8.dp)) }
-            )
+            ExposedDropdownMenuBox(
+                expanded = isKategoriExpanded,
+                onExpandedChange = { isKategoriExpanded = !isKategoriExpanded }
+            ) {
+                OutlinedTextField(
+                    value = selectedKategori?.nama ?: "Pilih Kategori",
+                    onValueChange = {}, // read-only
+                    readOnly = true,
+                    label = { Text("Kategori") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isKategoriExpanded) },
+                    modifier = Modifier.fillMaxWidth().menuAnchor(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = hijau30, unfocusedBorderColor = hijau30)
+                )
+                ExposedDropdownMenu(
+                    expanded = isKategoriExpanded,
+                    onDismissRequest = { isKategoriExpanded = false }
+                ) {
+                    allKategori.forEach { kategori ->
+                        DropdownMenuItem(
+                            text = { Text(kategori.nama) },
+                            onClick = {
+                                selectedKategori = kategori
+                                isKategoriExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
 
-            Text("Bukti Pemasukan", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, modifier = Modifier.padding(bottom = 8.dp))
+            // Foto Section
+            Text("Foto", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, modifier = Modifier.padding(bottom = 8.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -168,72 +184,68 @@ fun TambahPemasukanScreen(navController: NavController) {
             }
 
             imageUri?.let {
-                Box(modifier = Modifier.fillMaxWidth().height(300.dp).padding(top = 16.dp)) {
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp) // Increase height to show more of the image
+                    .padding(top = 16.dp)) {
                     Image(
                         painter = rememberAsyncImagePainter(it),
-                        contentDescription = "Gambar Pemasukan",
+                        contentDescription = "Gambar Pengeluaran",
                         modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Fit
+                        contentScale = ContentScale.Fit // Change to Fit
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(Modifier.weight(1f))
 
             Button(
                 onClick = {
-                    val pemasukan = Pemasukan(
-                        sumber = sumberPemasukan,
-                        tanggal = tanggalPemasukan,
-                        jumlah = jumlahPemasukan,
+                    val jumlahLong = jumlah.toLongOrNull() ?: 0L
+                    val pengeluaran = Pengeluaran(
+                        nama = nama,
+                        jumlah = jumlahLong,
+                        tanggal = tanggal,
+                        kategoriId = selectedKategori!!.id,
                         fotoUri = imageUri?.toString()
                     )
-                    pemasukanViewModel.insert(pemasukan)
+                    pengeluaranViewModel.insert(pengeluaran)
                     navController.popBackStack()
                 },
                 enabled = isFormValid,
+                modifier = Modifier.fillMaxWidth().height(50.dp),
                 shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = hijau30),
-                modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp).height(50.dp)
+                colors = ButtonDefaults.buttonColors(containerColor = hijau30, disabledContainerColor = Color.Gray)
             ) {
-                Text(text = "Simpan", fontSize = 16.sp)
+                Text("Simpan", color = Color.White, fontSize = 16.sp)
             }
         }
 
         if (showDatePicker) {
-            TanggalPicker(buka = true, saatTutup = { showDatePicker = false }, saatDipilih = { tanggalPemasukan = it })
+            TanggalPicker(buka = true, saatTutup = { showDatePicker = false }, saatDipilih = { tanggal = it })
         }
     }
 }
 
 @Composable
-private fun FormInput(
-    label: String,
-    value: String,
-    onValueChange: (String) -> Unit,
-    placeholder: String,
-    keyboardType: KeyboardType = KeyboardType.Text,
-    trailingIcon: @Composable (() -> Unit)? = null
-) {
-    Column(modifier = Modifier.padding(bottom = 16.dp)) {
+private fun FormInput(label: String, value: String, onValueChange: (String) -> Unit, keyboardType: KeyboardType = KeyboardType.Text, trailingIcon: @Composable (() -> Unit)? = null) {
+    Column {
         Text(label, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, modifier = Modifier.padding(bottom = 8.dp))
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            placeholder = { Text(text = placeholder, color = Color.Gray) },
-            shape = RoundedCornerShape(16.dp),
             modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             trailingIcon = trailingIcon,
-            textStyle = TextStyle(color = Color.Black, fontSize = 16.sp),
-            colors = OutlinedTextFieldDefaults.colors(unfocusedBorderColor = hijau30, focusedBorderColor = hijau30, cursorColor = hijau30)
+            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = hijau30, unfocusedBorderColor = hijau30)
         )
     }
 }
 
 @Composable
 private fun TanggalInput(label: String, value: String, onClick: () -> Unit) {
-    Column(modifier = Modifier.padding(bottom = 16.dp)) {
+    Column {
         Text(label, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, modifier = Modifier.padding(bottom = 8.dp))
         OutlinedTextField(
             value = value,
@@ -248,10 +260,10 @@ private fun TanggalInput(label: String, value: String, onClick: () -> Unit) {
     }
 }
 
-@Preview(showBackground = true, device = "id:pixel_6")
+@Preview(showBackground = true)
 @Composable
-fun TambahPemasukanScreenPreview() {
+fun PreviewTambahPengeluaran() {
     TugasBesarPTB_COLIFETheme {
-        TambahPemasukanScreen(navController = rememberNavController())
+        TambahPengeluaranScreen(navController = rememberNavController())
     }
 }

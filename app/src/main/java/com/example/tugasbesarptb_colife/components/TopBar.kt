@@ -17,7 +17,7 @@ import com.example.tugasbesarptb_colife.ui.theme.hijau30
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(navController: NavHostController) { // tambahkan navController
+fun TopBar(navController: NavHostController) {
     TopAppBar(
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -36,7 +36,8 @@ fun TopBar(navController: NavHostController) { // tambahkan navController
         },
         actions = {
             IconButton(onClick = {
-                navController.navigate("notification") // navigasi ke layar notifikasi
+                navController.navigate("notification")
+
             }) {
                 Icon(
                     Icons.Default.Notifications,
